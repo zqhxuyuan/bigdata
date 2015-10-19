@@ -1,0 +1,22 @@
+<div class="container-fluid" style="padding:0px">
+    <div class="col-xs-12 col-sm-6 col-md-9" style="padding:0px;">
+        <div id="add-component-panel" class="ng-hide" />
+        <div id="jsplumb-container" class="jsplumb-container">
+            <component model="component" ng-repeat="component in pipeline.components" ng-click="editComponent(component)"></component>
+        </div>
+    </div>
+
+    <div class="col-xs-6 col-md-3 component-list">
+        <accordion close-others="false">
+            <accordion-group ng-repeat="(category, metadataList) in metadataByCategories" heading="{{category}}">
+                <ul class="list-group">
+                    <li ng-repeat="metadata in metadataList"
+                        id="{{metadata.id.toId()}}" metadata-id="{{metadata.id}}" class="list-group-item"
+                        tooltip-placement="bottom" tooltip-trigger="mouseenter" tooltip="{{metadata.description}}">
+                        {{metadata.name}}
+                    </li>
+                </ul>
+            </accordion-group>
+        </accordion>
+    </div>
+</div>

@@ -1,0 +1,4 @@
+select a+4 from s1 as s;
+select * from a where a.b="d";
+create stream a(b int, c timestamp) from source a;
+create stream a(b int, c timestamp) from select * from b;

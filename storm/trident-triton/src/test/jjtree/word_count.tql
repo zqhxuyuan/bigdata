@@ -1,0 +1,11 @@
+# This is a sample query script that produce the trending topic of a word stream.
+
+# register a word stream
+REGISTER STREAM wordStream(word string) FROM file("data/word.dat");
+
+# compute word count
+SELECT word, COUNT(word) AS wordCount
+FROM wordStream
+GROUP BY word
+OUTPUT TO file("data/word_count.out");
+

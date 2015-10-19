@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.wso2.siddhi.sample;
+
+import org.wso2.siddhi.core.ExecutionPlanRuntime;
+import org.wso2.siddhi.core.SiddhiManager;
+import org.wso2.siddhi.core.event.Event;
+import org.wso2.siddhi.core.stream.input.InputHandler;
+import org.wso2.siddhi.core.stream.output.StreamCallback;
+import org.wso2.siddhi.core.util.EventPrinter;
+
+/**
+ *
+ [Event{timestamp=1444877287835, data=[IBM, 75.0, 100], isExpired=false}]
+ [Event{timestamp=1444877287837, data=[WSO2, 705.0, 101], isExpired=false}]
+ [Event{timestamp=1444877287837, data=[IBM, 110.0, 102], isExpired=false}]
+ [Event{timestamp=1444877287837, data=[ORACLE, 50.0, 103], isExpired=false}]
+ */
+public class PartitionSample {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        // Creating Siddhi Manager
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        //分区: 根据symbol字段. 相当于group-by, 可以运用统计函数比如min,max,sum等
+        //但是从打印的日志看来, 和group by并不一样.
+        String executionPlan = "" +
+                "define stream cseEventStream (symbol string, price float,volume int);" +
+                "" +
+                "partition with (symbol of cseEventStream)" +
+                "begin" +
+                "   @info(name = 'query') " +
+                "   from cseEventStream " +
+                "   select symbol, sum(price) as price, volume " +
+                "   insert into OutStockStream ;" +
+                "end ";
+
+        //Generating runtime
+        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(executionPlan);
+
+        //Adding callback to retrieve output events from stream
+        executionPlanRuntime.addCallback("OutStockStream", new StreamCallback() {
+            @Override
+            public void receive(Event[] events) {
+                EventPrinter.print(events);
+            }
+        });
+
+        //Retrieving InputHandler to push events into Siddhi
+        InputHandler inputHandler = executionPlanRuntime.getInputHandler("cseEventStream");
+
+        //Starting event processing
+        executionPlanRuntime.start();
+
+        //Sending events to Siddhi
+        inputHandler.send(new Object[]{"IBM", 75f, 100});
+        inputHandler.send(new Object[]{"WSO2", 705f, 101});
+        inputHandler.send(new Object[]{"IBM", 35f, 102});
+        inputHandler.send(new Object[]{"ORACLE", 50.0f, 103});
+        Thread.sleep(1000);
+
+        //Shutting down the runtime
+        executionPlanRuntime.shutdown();
+
+        //Shutting down Siddhi
+        siddhiManager.shutdown();
+    }
+}

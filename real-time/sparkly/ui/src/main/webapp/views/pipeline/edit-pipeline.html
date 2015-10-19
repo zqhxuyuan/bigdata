@@ -1,0 +1,80 @@
+<div>
+    <header>
+        <div class="pull-left">
+            <span style="padding:5px;padding-right: 20px;">
+                {{pipeline.name}}
+                <span ng-show="!validationReport.isEmpty()" class="badge" style="color: #fff;background-color: #E74C3C;"
+                      tooltip-placement="bottom" tooltip="{{validationReport.warningCount}} warnings, {{validationReport.errorCount}} errors">
+                    !
+                </span>
+            </span>
+            <span class="header-tab" ng-class="{true:'active', false:'clickable'}[currentView == 'Data workflow']" ng-click="currentView = 'Data workflow'">Data workflow</span>
+            <span class="header-tab" ng-class="{true:'active', false:'clickable'}[currentView == 'Monitoring']" ng-click="currentView = 'Monitoring'">Monitoring</span>
+            <span class="header-tab" ng-class="{true:'active', false:'clickable'}[currentView == 'Settings']" ng-click="currentView = 'Settings'">Settings</span>
+            <span class="header-tab" ng-class="{true:'active', false:'clickable'}[currentView == 'Errors']" ng-click="currentView = 'Errors'" ng-show="!validationReport.isEmpty()">Errors ({{validationReport.size()}})</span>
+        </div>
+
+        <div class="pull-right">
+            <i class="fa fa-cloud-upload fa-2x clickable" ng-click="saveAndLaunch()" style="margin-right: 40px" tooltip-placement="left" tooltip="Save and deploy"></i>
+            <i class="fa fa-undo fa-2x clickable" ng-click="revert()" tooltip-placement="left" tooltip="Revert changes"></i>&nbsp;
+            <i class="fa fa-save fa-2x clickable" ng-click="save()" tooltip-placement="left" tooltip="Save"></i>&nbsp;
+        </div>
+    </header>
+
+    <pipeline-data-workflow ng-show="currentView == 'Data workflow'"></pipeline-data-workflow>
+
+    <div ng-show="currentView == 'Monitoring'" class="container-fluid">
+        <form ng-repeat="component in pipeline.components" role="form">
+            <div ng-if="component.hasMonitoring()">
+                <h4>{{component.name}} : </h4>
+                <form role="form">
+                    <pipeline-monitoring-edition ng-repeat="monitoring in component.monitorings"  monitoring="monitoring"></pipeline-monitoring-edition>
+                </form>
+            </div>
+        </form>
+    </div>
+
+    <div ng-show="currentView == 'Settings'" class="container-fluid">
+        <h6>Informations</h6>
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Name</label>
+                <div class="col-sm-9">
+                    <input type="text" ng-model="pipeline.name" class="form-control" ng-required="true"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Description</label>
+                <div class="col-sm-9">
+                    <textarea ng-model="pipeline.description" class="form-control" rows="5" ng-required="false"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Batch duration (ms)</label>
+                <div class="col-sm-9">
+                    <input type="number" ng-model="pipeline.batchDurationMs" class="form-control" ng-required="true"/>
+                </div>
+            </div>
+        </form>
+
+        <div ng-repeat="(name, values) in pipeline.settings">
+            <h6>{{name}}</h6>
+            <form class="form-horizontal">
+                <div class="form-group" ng-repeat="(key, value) in values">
+                    <label class="col-sm-3 control-label">{{key}}</label>
+                    <div class="col-sm-9">
+                        <input type="text" ng-model="values[key]" class="form-control" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div ng-show="currentView == 'Errors'" class="container-fluid">
+        <div class="bs-callout bs-callout-{{message.level.toLowerCase()}}" ng-repeat="message in validationReport.messages">
+            <p>{{message.text}}</p>
+        </div>
+    </div>
+
+
+</div>

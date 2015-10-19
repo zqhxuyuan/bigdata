@@ -1,0 +1,17 @@
+<div class="form-group">
+	<label for="{{property.name.removeSpaces()}}">{{property.name}}</label> <small ng-if="property.metadata.mandatory">(Mandatory)</small>
+
+	<select ng-if="property.metadata.hasLimitedValues()" name="{{property.name.removeSpaces()}}" class="form-control" ng-model="property.value" ng-init="property.value = property.value || property.metadata.acceptedValues[0]"  ng-options="value as value for value in property.metadata.acceptedValues" ng-required="property.metadata.mandatory">
+		<option ng-if="!property.metadata.mandatory" value=>None</option>
+	</select>
+
+    <div ng-if="!property.metadata.hasLimitedValues()">
+        <input ng-if="property.metadata.propertyType == 'STRING'" id="{{property.name.removeSpaces()}}" name="{{property.name.removeSpaces()}}" class="form-control" ng-model="property.value" type="text" ng-required="property.metadata.mandatory">
+        <input ng-if="property.metadata.propertyType == 'INTEGER'" name="{{property.name.removeSpaces()}}" class="form-control" ng-model="property.value" rpattern="/^-?\d+$/" ng-required="property.metadata.mandatory">
+        <input ng-if="property.metadata.propertyType == 'LONG'" name="{{property.name.removeSpaces()}}" class="form-control" ng-model="property.value" rpattern="/^-?\d+$/" ng-required="property.metadata.mandatory">
+        <input ng-if="property.metadata.propertyType == 'DECIMAL'" name="{{property.name.removeSpaces()}}" class="form-control" ng-model="property.value" rpattern="/^-?\d+(\.\d*)?$/" step="any" ng-required="property.metadata.mandatory">
+        <div ng-if="property.metadata.propertyType == 'BOOLEAN'" name="{{property.name.removeSpaces()}}"><input name="{{property.name.removeSpaces()}}" type="checkbox" switch></div>
+    </div>
+
+	<p class="help-block">{{property.metadata.metadata}}</p>
+</div>

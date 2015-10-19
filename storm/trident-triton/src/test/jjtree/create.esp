@@ -1,0 +1,5 @@
+# Create stream
+create stream s1 (a int, b float, c string, d timestamp) from source adv;
+
+# Create relation
+# create relation r1 (a int, b float, c string, d timestamp) from source adv;

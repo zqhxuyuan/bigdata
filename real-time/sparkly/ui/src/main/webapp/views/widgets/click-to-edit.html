@@ -1,0 +1,7 @@
+<div>
+    <div ng-hide="editing" ng-click="edit()" class="clickable">
+        {{model}}
+    </div>
+
+    <input ng-show="editing" class="form-control" ng-model="model" ng-blur="validate()"/>
+</div>

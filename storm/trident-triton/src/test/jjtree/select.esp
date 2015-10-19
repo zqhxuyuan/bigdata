@@ -1,0 +1,31 @@
+# Create stream
+create stream s1 (a int, b float, c string, d timestamp) from source adv;
+
+# Create relation
+create relation r1 (a int, b float, c string, d timestamp) from source adv;
+
+# Basic select
+# select * from s1;
+# select a, s.b as sb from s1 as s;
+
+# Projection with expression
+# select (a+3)/2, b*c from s1;
+
+# Where clause
+# select a, b from s1 where s1.a = 3;
+
+# Aggregate, group by
+select a, avg(b), sum(b) from s1 where d = 1 group by a, d;
+
+# Window
+select a, b from s1[a=3].win:length(3) where s1.b=3;
+
+# join
+select s.b, r.c from s1[a=3].win:length(3) as s, r1 as r where s.a=r.a and (s.b=3 or s.d=4);
+
+# join, aggregation
+select max(s.b), min(r.c)
+from s1[a=3].win:length(3) as s, r1 as r
+where s.a=r.a and (s.b=3 or s.d=4)
+group by s.d, r.d;
+

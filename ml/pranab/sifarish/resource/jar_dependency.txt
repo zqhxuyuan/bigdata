@@ -1,0 +1,71 @@
+Dependent jars
+==============
+sifarish depends on the following jar libraries. Most of them are third party except for
+chombo and hoidla. For these two you could either checkout the jars and place them in your
+local maven repo or you could build them.
+
+Some of them are needed only when using some special features, as indicated by the text in 
+parenthesis
+
+- always needed
+jackson-core-asl-1.9.13.jar (**always needed)
+jackson-mapper-asl-1.9.13.jar (**always needed)
+commons-lang3-3.1.jar (**always needed)
+chombo-1.0.jar (my project, **always needed)
+
+- optional
+lucene-core-4.4.0.jar (text matching features)
+lucene-analyzers-common-4.4.0.jar (text matching features, other language analyzers)
+lucene-analyzers-morfologik-4.4.0.jar (text matching features, polish language analyzer)
+hoidla-1.0.jar (my project, neede for real time features)
+jena-arq-2.9.4.jar (semantic feature)
+
+Building dependent jars
+=======================
+Follow these steps before building sifarishif you have decided to build the jars for 
+chombo and hoidla
+
+Checkout project chombo and run
+mvn clean install
+
+Checkout project hoidla and run
+mvn clean install
+
+Handling run time dependency
+============================
+There are many ways to handle dependency in Hadoop. You could choose any of these 4
+options.
+
+There are some jars that are mandatory and some are needed depending on the use case,
+as described earlier.
+
+1. Use libjar command line options as below
+hadoop jar xyz.jar com.example.MyMapreduce -libjars path1/lib1.jar,path2/lib2.jar
+
+2. Use maven shade plugin to package all jars into one uber jar. The following needs to
+be added to the build element in pom.xml
+<build>
+.......
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-shade-plugin</artifactId>
+			<executions>
+				<execution>
+					<phase>package</phase>
+					<goals>
+						<goal>shade</goal>
+					</goals>
+				</execution>
+			</executions>
+			<configuration>
+				<finalName>uber-${artifactId}-${version}</finalName>
+			</configuration>
+		</plugin>
+	</plugins>
+.......
+</build>
+
+3. Use ant to package all dependent jars. You could use ../resource/build_hadoop.xml as an example
+
+4. Copy all jars to hadoop lib directory in all nodes 

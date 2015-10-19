@@ -1,0 +1,11 @@
+# This is a sample query script that produce the trending topic of a word stream.
+
+# register a word stream
+register stream wordStream(word string) from file("data/word.dat"); 
+
+# compute word count for past 1 min.
+register stream wordCountStream(word String, wordCount int) from
+select word, count(word) as wordCount from wordStream.win:time(1 minute) as s group by word;
+
+# compute top 10 word
+select word from wordCountStream order by wordCount desc limit 10;

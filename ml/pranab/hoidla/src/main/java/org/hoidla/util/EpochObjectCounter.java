@@ -1,0 +1,42 @@
+/*
+ * hoidla: various algorithms for Big Data solutions
+ * Author: Pranab Ghosh
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+package org.hoidla.util;
+
+import java.util.LinkedList;
+
+/**
+ * @author pranab
+ *
+ */
+public class EpochObjectCounter extends SimpleObjectCounter{
+	private LinkedList<Integer> epochs = new LinkedList<Integer>();
+
+	public EpochObjectCounter() {
+	}
+
+	@Override
+	public void expire(Expirer expirer, long sequenceMax) {
+		count = expirer.expire(count, epochs);
+	}
+	
+	public void initialize() {
+		count = 0;
+		epochs.clear();
+	}
+
+}

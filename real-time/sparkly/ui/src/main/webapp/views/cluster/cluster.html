@@ -1,0 +1,34 @@
+<div>
+    <header>
+        <span>{{cluster.name}} cluster<small>({{cluster.status.prettyString()}})</small></span>
+
+        <span class="pull-right btn-group">
+            <i ng-show="cluster.isRunning()" class="fa fa-power-off fa-2x clickable" ng-click="cluster.stop()" style="margin-right: 10px" tooltip-placement="bottom" tooltip="Stop"></i>
+        </span>
+
+        <span class="pull-right btn-group" ng-show="cluster.isReadyToDeploy()">
+            <i class="fa fa-cloud-upload fa-2x clickable dropdown-toggle" style="margin-right: 10px" data-toggle="dropdown" ng-click="saveAndLaunch()" tooltip-placement="left" tooltip="Deploy or Restart"></i>
+            <span class="dropdown-arrow dropdown-arrow-inverse"></span>
+            <ul class="dropdown-menu dropdown-menu-inverse" role="menu">
+                <li ng-repeat="pipeline in pipelines">
+                    <a ng-click="deploy(pipeline)">Deploy {{pipeline.name}}</a>
+                    <a ng-click="restart(pipeline)">Restart {{pipeline.name}}</a>
+                </li>
+            </ul>
+        </span>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <stacked-areas-monitoring-chart monitoring="latencyMonitoring" clusterid="clusterId" componentid="'pipeline'" componentname="'Pipeline'"></stacked-areas-monitoring-chart>
+            <lines-monitoring-chart monitoring="memoryMonitoring" clusterid="clusterId" componentid="'pipeline'" componentname="'Pipeline'"></lines-monitoring-chart>
+
+
+            <div ng-repeat="monitoring in cluster.monitorings">
+                <monitoring-chart monitoring="monitoring.metadata" clusterid="clusterId" componentid="monitoring.component.id" componentname="monitoring.component.name"></monitoring-chart>
+            </div>
+        </div>
+    </div>
+
+</div>
+

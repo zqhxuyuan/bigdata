@@ -1,0 +1,45 @@
+<div>
+	<div class="modal-header">
+		<div class="form-group">
+			<input id="component-name" class="form-control input-lg" ng-model="component.name" placeholder="Component's name" />
+		</div>
+	</div>
+	<div class="modal-body" style="height: 600px">
+		<tabset>
+			<tab ng-if="component.hasProperties()">
+				<tab-heading id="properties-tab-heading"><i class="fa fa-cogs fa-lg"></i> Properties </tab-heading>
+	
+				<form name="propertiesForm">
+					<div ng-repeat="property in component.properties">
+						<property-input model="property" />
+					</div>
+				</form>
+			</tab>
+
+			<tab ng-if="component.hasInputs()">
+				<tab-heading id="input-mapping-tab-heading"><i class="fa fa-link fa-lg"></i> Inputs </tab-heading>
+				
+				<form role="form" ng-repeat="input in component.inputs" ng-show="input.metadata.type != 'NONE'">
+                    <input-stream-editor stream="input" component="component" pipeline="pipeline" />
+				</form>
+			</tab>
+
+			<tab ng-if="component.hasOutputs()">
+				<tab-heading id="output-mapping-tab-heading"><i class="fa fa-link fa-lg"></i> Outputs </tab-heading>
+
+				<form role="form" ng-repeat="output in component.outputs" ng-show="output.metadata.type != 'NONE'">
+                    <output-stream-editor stream="output" component="component" pipeline="pipeline" />
+				</form>
+			</tab>
+		</tabset>
+	</div>
+
+	<div class="modal-footer">
+		<button id="delete-component" class="btn btn-danger pull-left" ng-click="deleteComponent()">
+			<i class="fa fa-trash-o fa-lg"></i> Delete
+		</button>
+		<button id="save-component" class="btn btn-primary" ng-click="saveComponent()">
+			<i class="fa fa-check fa-lg"></i> Ok
+		</button>
+	</div>
+</div>

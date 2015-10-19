@@ -1,0 +1,38 @@
+
+# Application Server Configuration
+server:
+    port: 8080
+    
+# HTTP Proxy Configuration
+#proxy:
+#    host: proxy1.lmco.com
+#    port: 80
+
+# Authentication Configuration
+#auth:
+#    enabled: false
+#    realmClass: streamflow.server.security.DatastoreRealm
+#    moduleClass: streamflow.server.security.DatastoreRealmModule
+
+# Logging Configuration
+#logger:
+#    level: INFO
+#    baseDir: /var/log/storm
+#    formatPattern: "%d{yyyy-MM-dd'T'HH:mm:ss.sss'Z',GMT} %p %X{topology} %X{project} %X{task} %X{component} %c - %m%n"
+    
+# Datastore configuration
+#datastore:
+#    moduleClass: streamflow.datastore.jdbc.config.JDBCDatastoreModule
+ 
+# Local Cluster configuration
+#localCluster:
+#    enabled: true
+    
+# Cluster Configuration
+#clusters:
+#    - id: storm-cluster
+#      displayName: Storm Cluster
+#      nimbusHost: cluster.host 
+#      nimbusPort: 6627 
+#      logServerHost: localhost
+#      logServerPort: 9200

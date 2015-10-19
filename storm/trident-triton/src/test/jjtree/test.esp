@@ -1,0 +1,32 @@
+# Create stream
+register stream r1 (a int, b float, c string, d timestamp) from source("TwitterSpout");
+
+# Create relation
+register relation r1 (a int, b float, c string, d timestamp) from file("ab/text.java");
+
+# Create stream from query
+register stream a(b int, c timestamp) from select * from b;
+
+# Basic select
+select * from s1;
+select a.b from a;
+
+# select with expression
+select (a+4)*3 from s1
+output to file("asdfsad");
+
+# rename with join
+select * from stream1 as s1, stream2 as s2 where s1.a=s2.a;
+
+# aggregation
+select max(a), count(b), c from s group by c;
+select count(*) from s1;
+
+# window
+select a from s1[a=3].win:length(3);
+select *
+from stream1[a=3].win:time(3 seconds) as s1, stream2[b=3].win:time(10 seconds) as s2
+where s1.c = s2.c;
+
+# complex condition
+select * from stream1 where a = 3 and (b > 4 or c = d);

@@ -1,0 +1,35 @@
+#############################################
+#			Test data for Kafka 			#
+#############################################
+
+// install
+{"event_code":"400000","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 05:51:12","app_key":"1","os_type":0,"version":"3.1.2","channel":"A-Faster"}
+
+// open
+{"event_code":"100010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 07:11:48"}
+{"event_code":"100010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 08:45:09"}
+
+// play start
+{"event_code":"101013","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 08:00:15"}
+{"event_code":"101013","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 09:09:57"}
+{"event_code":"101013","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 09:10:07"}
+{"event_code":"101013","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 09:10:50"}
+{"event_code":"101013","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 09:09:57"}
+{"event_code":"101013","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 19:09:57"}
+
+// play end
+{"event_code":"101010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 08:12:39","duration":"189"}
+{"event_code":"101010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 09:42:46","duration":"381"}
+{"event_code":"101010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 10:42:46","duration":"99"}
+{"event_code":"101010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 11:42:46","duration":"147"}
+{"event_code":"101010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 12:42:46","duration":"1000"}
+{"event_code":"101010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 13:42:46","duration":"301"}
+{"event_code":"101010","install_id":"000000HX","udid":"ABCQQQQQQQQQQQQQQQQQQCBA","event_time":"2015-02-09 14:25:13","duration":"1022"}"
+
+
+
+== [Note] ==
+
+Use the following command to produce events:
+
+bin/kafka-console-producer.sh --broker-list hadoop2:9092,hadoop3:9092 --topic topic_json_event

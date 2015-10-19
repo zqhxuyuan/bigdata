@@ -1,0 +1,19 @@
+<div>
+    <div class="modal-header">
+        Create new pipeline
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <input id="pipeline-name" class="form-control input-lg" ng-model="info.name" placeholder="Pipeline's name" />
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button id="cancel" class="btn pull-left" ng-click="cancel()">
+            Cancel
+        </button>
+        <button id="save-component" class="btn btn-primary" ng-click="create()">
+            <i class="fa fa-check fa-lg"></i> Create pipeline
+        </button>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+# Create stream
+# register stream s1 (a int, b float, c string, d timestamp) from file("data/input.dat");
+register stream wordStream(word string) from file("data/word.dat"); 
+
+# Basic select
+# select a, max(a) from s1.win:length(3) group by a output to file("data/output2.dat");
+# select max(a), sum(a), min(a) from s1.win:length(3) output to file("data/output.dat");
+select word, count(word) as w_c from wordStream.win:length(3) as s group by word output to file("data/word_count.dat");
+
+

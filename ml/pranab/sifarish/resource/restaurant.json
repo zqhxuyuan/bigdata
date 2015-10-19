@@ -1,0 +1,44 @@
+{
+	"distAlgorithm" : "euclidean",
+	"textMatchingAlgorithm" : "jaccard",
+	"entity" : 
+	{
+		"name" : "restaurant",
+		"fields" :
+		[
+			{
+				"name" : "ID",
+				"ordinal" : 0,
+				"id" : true,
+				"dataType" : "string"
+			},
+			{
+				"name" : "cuisine",
+				"ordinal" : 2,
+				"dataType" : "text",
+				"explodeThreshold" : 0.9
+			},
+			{
+				"name" : "location",
+				"ordinal" : 3,
+				"dataType" : "geoLocation",
+				"maxDistance" : 10,
+				"weight" : 1.1,
+				"contAttrDistanceFunction" : "nonLinear"
+			},
+			{
+				"name" : "hours",
+				"ordinal" : 4,
+				"dataType" : "hourWindow",
+				"maxTimeWindow" : 90
+			},
+			{
+				"name" : "rating",
+				"ordinal" : 5,
+				"dataType" : "int",
+				"min" : 1,
+				"max" : 5
+			}
+		]
+	}
+}

@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.td.bigdata</groupId>
+    <artifactId>siddhi2-debs-2013</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <siddhi2.version>2.1.0-wso2v1</siddhi2.version> <!--2.0.0-wso2v4-->
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.siddhi</groupId>
+            <artifactId>siddhi-core</artifactId>
+            <version>${siddhi2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.siddhi</groupId>
+            <artifactId>siddhi-api</artifactId>
+            <version>${siddhi2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.siddhi</groupId>
+            <artifactId>siddhi-query</artifactId>
+            <version>${siddhi2.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        
+        <!--
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        -->
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>wso2-maven2-repository</id>
+            <name>WSO2 Maven2 Repository</name>
+            <url>http://dist.wso2.org/maven2</url>
+        </repository>
+
+        <repository>
+            <id>wso2-nexus</id>
+            <name>WSO2 internal Repository</name>
+            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-server</argument>
+                        <argument>-Dsiddhi.AsyncProcessing=True</argument>
+                        <argument>-Dsiddhi.ThreadSchedulerCorePoolSize=2</argument>
+                        <argument>-Dsiddhi.ThreadThreadExecutorCorePoolSize=2</argument>
+                        <argument>-Dsiddhi.ThreadExecutorMaxPoolSize=2</argument>
+                        <argument>-Dsiddhi.EnableStats=0</argument>
+                        <argument>-Dsiddhi.EnableTrace=0</argument>
+                        <argument>-Dsiddhi.EventMonitor=PassThroughEventMonitor</argument> <!-- PassThrewEventMonitor | LogEventMonitor -->
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>siddhi.debs.App</argument>
+                        <argument>/media/prabodha/data/ebooks/DistributedParallelSystems/MapReduce/debs-data/full-game</argument> <!-- data file -->
+                        <argument>10</argument> <!-- interval in milliseconds -->
+                        <argument>100</argument> <!-- number of events in interval -->
+                    </arguments>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>

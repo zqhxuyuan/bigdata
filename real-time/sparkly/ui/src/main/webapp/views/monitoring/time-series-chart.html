@@ -1,0 +1,10 @@
+<div class="chart-container">
+    <div class="chart-title">{{options.title}}</div>
+    <div class="chart"></div>
+    <div class="chart-legend"></div>
+    <div class="chart-value" ng-show="values != null && values.length > 0">
+        <small style="font-size:50%">
+            <div ng-repeat="value in values">{{value.name}} : {{value.value}} {{unit}}</div>
+        </small>
+    </div>
+</div>

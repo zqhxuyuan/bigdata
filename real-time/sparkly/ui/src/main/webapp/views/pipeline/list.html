@@ -1,0 +1,29 @@
+<div>
+    <header>
+        Pipelines
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-2" ng-repeat="pipeline in pipelines" style="margin-bottom: 10px;">
+                <div class="tile">
+                    <h3 class="tile-title">{{pipeline.name}}</h3>
+                    <p>{{pipeline.description}}</p>
+
+                    <a class="btn btn-primary" ng-href="#/pipelines/{{pipeline.id}}">
+                        <i class="fa fa-edit fa-lg"></i>
+                    </a>
+                    <a class="btn btn-danger" ng-click="deletePipeline();">
+                        <i class="fa fa-trash-o fa-lg"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <br />
+
+        <button id="create-new-pipeline" class="btn btn-primary" ng-click="openCreationModal();">
+            <i class="fa fa-plus"></i> Create new
+        </button>
+    </div>
+</div>

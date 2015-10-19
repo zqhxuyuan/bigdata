@@ -1,0 +1,127 @@
+tuple执行的时间,..........,事件写入到Kafka中的时间
+1443091573:Koudai,user_9,1443065907
+1443091573:Koudai,user_6,1443065910
+1443091573:Koudai,user_1,1443065914
+1443091573:Koudai,user_9,1443065922
+1443091573:Koudai,user_2,1443065925
+1443091573:Koudai,user_2,1443065927
+1443091573:Koudai,user_4,1443065930
+1443091573:Koudai,user_5,1443065931
+1443091573:Koudai,user_1,1443065933
+1443091573:Koudai,user_8,1443065934
+1443091573:Koudai,user_1,1443065943
+1443091573:Koudai,user_4,1443065945
+1443091573:Koudai,user_8,1443065948
+1443091573:Koudai,user_8,1443065949
+1443091573:Koudai,user_6,1443065956
+1443091573:Koudai,user_7,1443065958     ==> 11时39分18秒
+由于消费Kafka的数据会从上次未消费的地方开始, 所以当前tuple会接着从上一次获取之前发射到kafka中的数据.
+
+尽管我们的时间窗口是60秒,并每隔20秒统计一次. 但是上面的事件时间明显在60秒之外. 因为放入Counter的事件
+在最后发射的时候都会一起统计, 所以这里会造成第一次统计的时候, 会把时间窗口长度在60秒之外的都统计进来.
+
+这样有个好处是: 即使Topology挂掉了, 下次Topology执行时, 会从上次消费的Kafka中继续读取事件,所以不会丢失数据.
+
+1443091573:Koudai,user_0,1443091544     ==> 18时45分44秒
+1443091573:Koudai,user_2,1443091545
+1443091573:Koudai,user_6,1443091546
+1443091573:Koudai,user_0,1443091547
+1443091573:Koudai,user_2,1443091548
+1443091573:Koudai,user_0,1443091549
+1443091573:Koudai,user_9,1443091550
+1443091573:Koudai,user_2,1443091551
+1443091573:Koudai,user_2,1443091552
+1443091573:Koudai,user_1,1443091553
+1443091573:Koudai,user_2,1443091554
+1443091573:Koudai,user_5,1443091555
+1443091573:Koudai,user_9,1443091556
+1443091573:Koudai,user_6,1443091557
+1443091573:Koudai,user_2,1443091558
+1443091573:Koudai,user_9,1443091559
+1443091573:Koudai,user_3,1443091560
+1443091573:Koudai,user_3,1443091561
+1443091573:Koudai,user_6,1443091562
+1443091573:Koudai,user_2,1443091563
+1443091573:Koudai,user_3,1443091564
+1443091573:Koudai,user_2,1443091565
+1443091573:Koudai,user_3,1443091566
+1443091573:Koudai,user_7,1443091567
+1443091573:Koudai,user_4,1443091568
+1443091573:Koudai,user_6,1443091569
+1443091573:Koudai,user_3,1443091570
+1443091573:Koudai,user_1,1443091571
+1443091573:Koudai,user_4,1443091572
+1443091573:Koudai,user_5,1443091573
+1443091574:Koudai,user_8,1443091574
+1443091575:Koudai,user_2,1443091575
+1443091576:Koudai,user_6,1443091576
+1443091577:Koudai,user_5,1443091577
+1443091578:Koudai,user_7,1443091578
+1443091579:Koudai,user_7,1443091579
+1443091580:Koudai,user_3,1443091580
+1443091581:Koudai,user_2,1443091581
+1443091582:Koudai,user_8,1443091582
+1443091583:Koudai,user_4,1443091583
+1443091584:Koudai,user_1,1443091584
+1443091585:Koudai,user_9,1443091585
+1443091586:Koudai,user_7,1443091586
+1443091587:Koudai,user_9,1443091587
+1443091589:Koudai,user_4,1443091588
+1443091589:Koudai,user_3,1443091589     ==> 18时46分29秒
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_9		7       ==> 18时46分30秒
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		4
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_1		6
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_6		7
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		12
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_7		5
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		7
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_8		5
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		6
+1443091590-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_0		3
+
+以user_9为例, 在波浪线之前(即发射时), 一共出现了7次(包括了时间窗口在60秒之外的,原因前面已经说明了).
+
+为什么会打印4行波浪线, 因为Bolt有4个任务.  每个任务都会调用自己的execute方法.
+由于采用字段分组的策略, 所以相同key不会出现在不同的Task中!
+
+1443091590:Koudai,user_5,1443091590
+1443091591:Koudai,user_6,1443091591
+1443091593:Koudai,user_9,1443091592
+1443091593:Koudai,user_4,1443091593
+1443091594:Koudai,user_1,1443091594
+1443091595:Koudai,user_7,1443091595
+1443091597:Koudai,user_8,1443091596
+1443091598:Koudai,user_2,1443091597
+1443091599:Koudai,user_5,1443091599
+1443091600:Koudai,user_7,1443091600
+1443091601:Koudai,user_8,1443091601
+1443091602:Koudai,user_8,1443091602
+1443091603:Koudai,user_1,1443091603
+1443091604:Koudai,user_1,1443091604
+1443091605:Koudai,user_0,1443091605
+1443091606:Koudai,user_1,1443091606
+1443091607:Koudai,user_1,1443091607
+1443091608:Koudai,user_6,1443091608
+1443091609:Koudai,user_4,1443091609
+1443091610:Koudai,user_0,1443091610
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_9		8
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		6
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_1		11
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_6		9
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		13
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_7		7
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		7
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_8		8
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		8
+1443091610-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_0		5
+
+在新的20秒中(因为每隔20秒就统计一次), user_9只出现了一次, 加上上一次的值=7, 所以这次统计时, 值为8.
+注意到user_3在这20秒之内, 都没有事件进来, 所以最后还是会输出7.

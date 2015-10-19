@@ -1,0 +1,492 @@
+options {
+  MULTI = true;
+  KEEP_LINE_COLUMN = false;
+  VISITOR = true;
+  STATIC = false;
+}
+
+PARSER_BEGIN(TritonParser)
+
+package parser;
+
+/** An Triton EPL Grammar. */
+public class TritonParser {
+
+    /** Main entry point. */
+    public static void main(String args[]) {
+        System.out.println("Reading from standard input...");
+        TritonParser t = new TritonParser(System.in);
+        try {
+            ASTStart n = t.Start();
+            n.dump(">");
+            System.out.println("Thank you.");
+        } catch (Exception e) {
+            System.out.println("Oops.");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+
+PARSER_END(TritonParser)
+
+
+SKIP :
+{
+    " "
+|
+    "\t"
+|
+    "\n"
+|
+    "\r"
+|
+    <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+|
+    <"/*" (~["*"])* "*" (~["/"] (~["*"])* "*")* "/">
+}
+
+SPECIAL_TOKEN : /* COMMENTS */
+{
+    <SINGLE_LINE_COMMENT: "#" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+}
+
+TOKEN [IGNORE_CASE]:
+{
+    < REGISTER: "register" >
+|
+    < RELATION: "relation" >
+|
+    < STREAM: "stream" >
+|
+    < SOURCE: "source" >
+|
+    < FILE: "file" >
+|
+    < INSERT: "insert" >
+|
+    < INTO: "into" >
+|
+    < OUTPUT: "output" >
+|
+    < TO: "to" >
+|
+    < SELECT: "select" >
+|
+    < FROM: "from" >
+|
+    < WHERE: "where" >
+|
+    < AS: "as" >
+|
+    < BY: "by" >
+|
+    < GROUP: "group" >
+|
+    < ORDER: "order" >
+|
+    < DESC: "desc" >
+|
+    < ASC: "asc" >
+|
+    < LIMIT: "limit" >
+|
+    < AND: "and" >
+|
+    < OR: "or" >
+|
+    < NOT: "not" >
+|
+    < WIN_LENGTH  : "win:length" >
+|
+    < WIN_TIME  : "win:time" >
+|
+    < WIN_TIME_BATCH  : "win:time_batch" >
+|
+    < AVG: "avg" >
+|
+    < SUM: "sum" >
+|
+    < MEDIAN: "median" >
+|
+    < STDDEV: "stddev" >
+|
+    < COUNT: "count" >
+|
+    < MAX: "max" >
+|
+    < MIN: "min" >
+|
+    < COMMA: "," >
+}
+
+/** Data type */
+TOKEN [IGNORE_CASE]:
+{
+    < INT: "int" >
+|
+    < FLOAT: "float" >
+|
+    < BYTE: "byte" >
+|
+    < STRING: "string" >
+|
+    < TIMESTAMP: "timestamp" >
+}
+
+/** Time units */
+TOKEN :
+{
+    < SECONDS: "seconds" | "second" | "sec" >
+|
+    < MINUTES: "minutes" | "minute" | "min" >
+|
+    < HOURS: "hours" | "hour" | "hr" >
+}
+
+
+TOKEN :
+{
+  < STRING_LITERAL: "\"" (~["\""] | "\\\"")*  "\"" >
+|
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < #LETTER: ["_","a"-"z","A"-"Z"] >
+|
+  < #DIGIT: ["0"-"9"] >
+}
+
+TOKEN:
+{
+  < INTEGER_LITERAL: <DECIMAL_LITERAL> (["l","L"])? >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < FLOATING_POINT_LITERAL:
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])?
+      | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])?
+      | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])?
+      | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]
+  >
+|
+  < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+}
+
+/** Comparison */
+TOKEN:
+{
+    < EQ: "=" >
+|
+    < NEQ: "<>" >
+|
+    < GT: ">" >
+|
+    < GTE: ">=" >
+|
+    < LT: "<" >
+|
+    < LTE: "<=" >
+}
+
+/** Main production */
+ASTStart Start() : {}
+{
+  Triton()
+  { return jjtThis; }
+}
+
+void Triton() #void : {}
+{
+    (Statement() ";")+
+}
+
+void Statement() #void : {}
+{
+  CreateClause()
+|
+  InsertClause()
+|
+  Query()
+}
+
+/** Create clause */
+void CreateClause() #void : { Token t; }
+{
+    LOOKAHEAD(2)
+    CreateStream()
+|
+    CreateRelation()
+}
+
+void CreateStream() : { Token t; }
+{
+    <REGISTER> <STREAM> t = <IDENTIFIER> { jjtThis.streamName = t.image; } "(" AttributeDefList() ")" <FROM> Source()
+}
+
+void CreateRelation() : { Token t; }
+{
+    <REGISTER> <RELATION> t = <IDENTIFIER> { jjtThis.relationName = t.image; } "(" AttributeDefList() ")" <FROM> Source()
+}
+
+void AttributeDefList() : {}
+{
+    AttributeDefinition() (<COMMA> AttributeDefinition())*
+}
+
+void AttributeDefinition() : {}
+{
+    Name() AttributeType()
+}
+
+void AttributeType() #void : {}
+{
+    <INT> #TypeInt
+|
+    <FLOAT> #TypeFloat
+|
+    <STRING> #TypeString
+|
+    <TIMESTAMP> #TypeTimestamp
+}
+
+void Source() : {}
+{
+    Spout()
+|
+    File()
+|
+    Query()
+}
+
+/** End of create clause */
+
+
+/** Insert clause */
+void InsertClause() : {}
+{
+  <INSERT> <INTO> Name()
+}
+/** End of insert clause */
+
+
+/** Query clause */
+void Query() : {}
+{
+  SelectClause() FromClause() (WhereClause())? (GroupByClause())? (OrderByClause())? (OutputClause())?
+}
+
+/** Select clause */
+void SelectClause() : {}
+{
+    <SELECT> ("*" | SelectAttribute() (LOOKAHEAD(2) <COMMA> SelectAttribute())*)
+}
+
+void SelectAttribute() : {}
+{
+    (Expression() | AggregateAttribute()) (LOOKAHEAD(2) ReName())?
+}
+
+void Attribute() : { Token t; }
+{
+  t = <IDENTIFIER> { jjtThis.name = t.image; } ( LOOKAHEAD(2) "." t = <IDENTIFIER> { jjtThis.name += ("." + t.image); })?
+}
+
+void AggregateAttribute() : {}
+{
+    LOOKAHEAD(3)
+    AggregateFunction() "(" Attribute() ")"
+|
+    <COUNT> "(" "*" ")"
+}
+
+/** End of select clause */
+
+/** From clause. */
+void FromClause() : {}
+{
+  <FROM> StreamDef() (LOOKAHEAD(2) <COMMA> StreamDef())*
+}
+
+void StreamDef() : {}
+{
+  Name() (LOOKAHEAD(2) StreamFilter())? (LOOKAHEAD(2) "." WindowSpec())? (LOOKAHEAD(2) ReName())?
+}
+
+void StreamFilter() : {}
+{
+  "[" Cond() "]"
+}
+
+void WindowSpec() #void : {}
+{
+    (<WIN_LENGTH> "(" Integer() ")") #WinLength
+|
+    (<WIN_TIME> "(" TimePeriod() ")") #WinTime
+|
+    (<WIN_TIME_BATCH> "(" TimePeriod() ")") #WinTimeBatch
+}
+
+void TimePeriod() : {}
+{
+    Number() Units()
+}
+
+void Number() #void : {}
+{
+    Integer()
+}
+
+void Units() : { Token t; }
+{
+    t = <SECONDS> { jjtThis.unit = "sec"; }
+|
+    t = <MINUTES> { jjtThis.unit = "min"; }
+|
+    t = <HOURS> { jjtThis.unit = "hr"; }
+}
+
+/** Where clause */
+void WhereClause() : {}
+{
+    <WHERE> Cond()
+}
+
+void GroupByClause() : {}
+{
+    <GROUP> <BY> Attribute() (LOOKAHEAD(2) <COMMA> Attribute())*
+}
+
+void OrderByClause() : {}
+{
+    <ORDER> <BY> OrderByAttribute() (LOOKAHEAD(2) <COMMA> OrderByAttribute())* (LOOKAHEAD(1) <LIMIT> Integer())?
+}
+
+void OrderByAttribute() : { Token t; }
+{
+    Attribute() (LOOKAHEAD(1) <ASC> { jjtThis.desc = false; } | <DESC> { jjtThis.desc = true; })?
+}
+
+void OutputClause() : {}
+{
+    <OUTPUT> <TO> File()
+}
+
+void Spout() : { Token t; }
+{
+    <SOURCE> "(" t = <STRING_LITERAL> { jjtThis.name = t.image; } ")"
+}
+
+void File() : { Token t; }
+{
+    <FILE> "(" t = <STRING_LITERAL> { jjtThis.uri = t.image; } ")"
+}
+
+
+void Cond() #void : {}
+{
+    LOOKAHEAD(CondPrime() (<AND> Cond())+)
+    (CondPrime() (LOOKAHEAD(<AND> Cond()) <AND> Cond())+) #CondAnd
+|
+    LOOKAHEAD(CondPrime() (<OR>  Cond())+)
+    (CondPrime() (LOOKAHEAD(<AND> Cond()) <OR>  Cond())+) #CondOr
+|
+    LOOKAHEAD(CondPrime())
+    CondPrime()                                             //#Epsilon
+|
+    "(" Cond() ")"
+}
+
+void CondPrime() : {}
+{
+    Expression() CmpOp() Expression()
+}
+
+void CmpOp() : { Token t; }
+{
+    t = <EQ> { jjtThis.op = t.image; }
+|
+    t = <NEQ> { jjtThis.op = t.image; }
+|
+    t = <GT> { jjtThis.op = t.image; }
+|
+    t = <GTE> { jjtThis.op = t.image; }
+|
+    t = <LT> { jjtThis.op = t.image; }
+|
+    t = <LTE> { jjtThis.op = t.image; }
+}
+
+/** An Expression. */
+void Expression() #void : {}
+{
+  AdditiveExpression()
+}
+
+/** An Additive Expression. */
+void AdditiveExpression() : { Token t;}
+{
+    MultiplicativeExpression() ( ( t = "+" { jjtThis.op = t.image; } | t = "-" { jjtThis.op = t.image; }) MultiplicativeExpression() )*
+}
+
+/** A Multiplicative Expression. */
+void MultiplicativeExpression() : { Token t; }
+{
+  UnaryExpression() ( ( t = "*" { jjtThis.op = t.image; } | t = "/" { jjtThis.op = t.image; } ) UnaryExpression() )*
+}
+
+/** A Unary Expression. */
+void UnaryExpression() :  {}
+{
+  "(" Expression() ")" | Attribute() | Constant()
+}
+
+void Constant() : {}
+{
+    StringLiteral()
+|
+    Integer()
+|
+    FloatingLiteral()
+}
+
+void AggregateFunction() : { Token t; }
+{
+    t = <COUNT> { jjtThis.name = t.image; }
+|
+    t = <MIN> { jjtThis.name = t.image; }
+|
+    t = <MAX> { jjtThis.name = t.image; }
+|
+    t = <SUM> { jjtThis.name = t.image; }
+|
+    t = <AVG> { jjtThis.name = t.image; }
+|
+    t = <MEDIAN> { jjtThis.name = t.image; }
+|
+    t = <STDDEV> { jjtThis.name = t.image; }
+}
+
+void Name() : { Token t; }
+{
+    t = <IDENTIFIER> { jjtThis.name = t.image; }
+}
+
+void ReName() : { Token t; }
+{
+    <AS> t = <IDENTIFIER> { jjtThis.rename = t.image; }
+}
+
+void StringLiteral() : { Token t; }
+{
+    t = <STRING_LITERAL> { jjtThis.value = t.image; }
+}
+
+void Integer() : { Token t; }
+{
+    t = <INTEGER_LITERAL> { jjtThis.value = Integer.parseInt(t.image); }
+}
+
+void FloatingLiteral() : { Token t; }
+{
+    t = <FLOATING_POINT_LITERAL> { jjtThis.value = Float.parseFloat(t.image); }
+}

@@ -1,0 +1,19 @@
+# Create stream
+register stream s1 (a int, b float, c string, d timestamp) from source("TwitterSpout");
+
+# Create relation
+register relation r1 (a int, b float, c string, d timestamp) from file("ab/text.data");
+
+# Create stream from query
+register stream s2(b int, c timestamp) from select b, c from s1;
+register stream s4(a int, b int, c timestamp, d int) from select * from s1;
+
+# Basic select
+select * from s1 as ssss;
+select a + 3, max(ss.b), count(d) from s4[a=b].win:length(3) as ss, s2 as sss where ss.d=3 and sss.b=3 group by sss.c;
+
+# Join
+select s11.b, s12.b from s2 as s11, s4 as s12 where s11.b = s12.a; # and s11.c = s12.d;
+
+# select from s2
+select b + c as bc from s2 where c = 3;

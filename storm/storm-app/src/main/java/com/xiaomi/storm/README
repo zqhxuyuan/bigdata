@@ -1,0 +1,4 @@
+https://github.com/swordsmanli/storm-logging
+
+The Original Github Version used Kafka Version is kafka-0.7.2.jar
+I Modify it to newly 0.8.1. hope it'll works.

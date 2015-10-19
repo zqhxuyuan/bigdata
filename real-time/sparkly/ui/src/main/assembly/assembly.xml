@@ -1,0 +1,61 @@
+<assembly
+        xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+   http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+    <id>dist</id>
+
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}-${artifact.version}.${artifact.extension}</outputFileNameMapping>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+    </dependencySets>
+
+    <files>
+        <file>
+            <outputDirectory>/</outputDirectory>
+            <source>${project.build.directory}/${project.artifactId}-${project.version}.jar</source>
+            <destName>bin/${project.artifactId}.jar</destName>
+        </file>
+        <file>
+            <source>src/main/assembly/application.conf</source>
+            <outputDirectory>/</outputDirectory>
+            <destName>conf/application.conf</destName>
+        </file>
+        <file>
+            <source>src/main/assembly/sparkly.sh</source>
+            <outputDirectory>/</outputDirectory>
+            <destName>bin/sparkly.sh</destName>
+        </file>
+    </files>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/main/bin/</directory>
+            <outputDirectory>/bin</outputDirectory>
+            <fileMode>0755</fileMode>
+            <directoryMode>0755</directoryMode>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources/</directory>
+            <outputDirectory>/conf</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/webapp/</directory>
+            <outputDirectory>/web-content</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}</directory>
+            <includes>
+                <include>README*</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>

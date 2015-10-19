@@ -1,0 +1,13 @@
+<div>
+    <h4>{{stream.metadata.name}}</h4>
+
+    <div class="form-group" ng-repeat="(name, pipelineName) in stream.mappedFeatures">
+        <label>{{name}} ({{stream.mappedFeatureType(name)}} feature)</label>
+        <input id="named-feature-{{stream.metadata.name.removeSpaces()}}-{{name.removeSpaces()}}" class="form-control" ng-model="stream.mappedFeatures[name]">
+    </div>
+
+    <div class="form-group" ng-repeat="(name, features) in stream.selectedFeatures">
+        <label>{{name}} (List of {{stream.selectedFeaturesType(name)}} features)</label>
+        <input tags values="features" />
+    </div>
+</div>

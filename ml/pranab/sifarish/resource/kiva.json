@@ -1,0 +1,213 @@
+{
+	"distAlgorithm" : "euclidean",
+	"numericDiffThreshold" : 0.20,
+	"textMatchingAlgorithm" : "jaccard",
+	"srcNonMatchingTermWeight" : 0.8,
+	"trgNonMatchingTermWeight" : 0.2,
+	"entities" : 
+	[
+		{
+			"name" : "profile",
+			"type" : 0,
+			"fieldCount" : 5,
+			"fields" :
+			[
+				{
+					"name" : "id",
+					"ordinal" : 0,
+					"id" : true,
+					"dataType" : "string"
+				},
+				{
+					"name" : "sector",
+					"ordinal" : 1,
+					"dataType" : "categorical",
+					"mappings" :
+					[
+						{ 
+							"matchingOrdinal" : 2
+						}
+					]
+				},
+				{
+					"name" : "country",
+					"ordinal" : 2,
+					"dataType" : "categorical",
+					"mappings" :
+					[
+						{ 
+							"matchingOrdinal" : 3
+						}
+					]
+				},
+				{
+					"name" : "raised",
+					"ordinal" : 3,
+					"dataType" : "int",
+					"numDistFunction" : "maxSoft",
+					"mappings" :
+					[
+						{ 
+							"matchingOrdinal" : 5
+						}
+					]
+				},
+				{
+					"name" : "keywords",
+					"ordinal" : 4,
+					"dataType" : "text",
+					"mappings" :
+					[
+						{ 
+							"matchingOrdinal" : 7
+						}
+					]
+				}
+			]
+		},
+		{
+			"name" : "loan",
+			"type" : 1,
+			"fieldCount" : 8,
+			"fields" :
+			[
+				{
+					"name" : "id",
+					"ordinal" : 0,
+					"id" : true,
+					"dataType" : "string"
+				},
+				{
+					"name" : "name",
+					"ordinal" : 1,
+					"dataType" : "string"
+				},
+				{
+					"name" : "sector",
+					"ordinal" : 2,
+					"dataType" : "categorical",
+					"categoricalDistances" :
+					[
+						{
+							"thisValue" : "Agriculture",
+							"thatValue" : "Food",
+							"distance" : 0.76
+						},
+						{
+							"thisValue" : "Construction",
+							"thatValue" : "Manufacturing",
+							"distance" : 0.61
+						},
+						{
+							"thisValue" : "Food",
+							"thatValue" : "Health",
+							"distance" : 0.66
+						}
+					]
+				},
+				{
+					"name" : "country",
+					"ordinal" : 3,
+					"dataType" : "categorical",
+					"weight" : 1.2,
+					"categoricalDistances" :
+					[
+						{
+							"thisValue" : "Costa Rica",
+							"thatValue" : "Nicaragua",
+							"distance" : 0.72
+						},
+						{
+							"thisValue" : "Ecuador",
+							"thatValue" : "Peru",
+							"distance" : 0.57
+						},
+						{
+							"thisValue" : "Ecuador",
+							"thatValue" : "Colombia",
+							"distance" : 0.46
+						},
+						{
+							"thisValue" : "Peru",
+							"thatValue" : "Colombia",
+							"distance" : 0.62
+						},
+						{
+							"thisValue" : "Peru",
+							"thatValue" : "Bolivia",
+							"distance" : 0.58
+						},
+						{
+							"thisValue" : "Kenya",
+							"thatValue" : "Uganda",
+							"distance" : 0.77
+						},
+						{
+							"thisValue" : "Ghana",
+							"thatValue" : "Benin",
+							"distance" : 0.64
+						},
+						{
+							"thisValue" : "Chad",
+							"thatValue" : "Sudan",
+							"distance" : 0.68
+						},
+						{
+							"thisValue" : "Laos",
+							"thatValue" : "Cambodia",
+							"distance" : 0.43
+						}
+					],
+					"conceptHierarchy" :
+					{
+						"concepts" :
+						[
+							{
+								"parent" : "Asia",
+								"children" : ["Philippines","Mongolia","Viet Nam","Azerbaijan","Georgia","Armenia","Tajikistan","Pakistan"]
+							},
+							{
+								"parent" : "Middle East",
+								"children" : ["Lebanon","Jordan"]
+							},
+							{
+								"parent" : "Africa",
+								"children" : ["Kenya","Benin","Ghana","Sierra Leone","Uganda","Senegal"]
+							},
+							{
+								"parent" : "South America",
+								"children" : ["Colombia","Peru","Paraguay","Bolivia"]
+							}
+
+						]
+					}
+				},
+				{
+					"name" : "amount",
+					"ordinal" : 4,
+					"dataType" : "int",
+					"min" : 0,
+					"max" : 3000
+				},
+				{
+					"name" : "raised",
+					"ordinal" : 5,
+					"dataType" : "int",
+					"weight" : 0.9,
+					"min" : 0,
+					"max" : 100
+				},
+				{
+					"name" : "url",
+					"ordinal" : 6,
+					"dataType" : "string"
+				},
+				{
+					"name" : "description",
+					"ordinal" : 7,
+					"dataType" : "text"
+				}
+			]
+		}
+	]
+}

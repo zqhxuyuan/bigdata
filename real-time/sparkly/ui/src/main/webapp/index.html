@@ -1,0 +1,100 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/favicon.ico" />
+    <link rel="stylesheet" href="styles/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/sidebar.css">
+    <link rel="stylesheet" href="vendors/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="vendors/bootstrap-notify/bootstrap-notify.css">
+    <link rel="stylesheet" href="styles/flat-ui.min.css">
+    <link rel="stylesheet" href="vendors/rickshaw/rickshaw.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body ng-app="app">
+	<!--[if lt IE 9]>
+		<p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser
+		    today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better
+		    experience this site.</p>
+		<![endif]-->
+
+	<ui-include src="'views/navigation-bar.html'"></ui-include>
+	<div ng-view></div>
+    <ui-include src="'views/footer.html'"></ui-include>
+	<div id="notifications" class='notifications bottom-right'></div>
+
+	<script src="vendors/jquery/jquery.js"></script>
+	<script src="vendors/jquery/jquery-ui.js"></script>
+	<script src="vendors/jsplumb/jquery.jsPlumb-1.5.4.js"></script>
+	<script src="vendors/angular/angular.js"></script>
+	<script src="vendors/angular/angular-mocks.js"></script>
+	<script src="vendors/angular/angular-resource.min.js"></script>
+	<script src="vendors/angular/angular-route.js"></script>
+	<script src="vendors/ui-utils/include.js"></script>
+    <script src="vendors/bootstrap/bootstrap.js"></script>
+    <script src="vendors/bootstrap/collapse.js"></script>
+	<script src="vendors/angular-ui/ui-bootstrap-tpls-0.10.0.min.js"></script>
+	<script src="vendors/bootstrap-notify/bootstrap-notify.js"></script>
+    <script src="vendors/bootstrap-switch/bootstrap-switch.min.js"></script>
+    <script src="vendors/bootstrap-tagsinput/bootstrap3-typeahead.min.js"></script>
+    <script src="vendors/bootstrap-tagsinput/bootstrap-tagsinput.min.js"></script>
+    <script src="vendors/atmosphere/jquery-atmosphere.js"></script>
+    <script src="vendors/d3/d3.v3.js"></script>
+    <script src="vendors/rickshaw/rickshaw.min.js"></script>
+
+    <script src="utils/element-utils.js"></script>
+    <script src="utils/array-utils.js"></script>
+    <script src="utils/string-utils.js"></script>
+    <script src="utils/fixed-queue.js"></script>
+
+	<script src="app/app.js"></script>
+
+    <script src="model/property.js"></script>
+    <script src="model/stream.js"></script>
+    <script src="model/component.js"></script>
+    <script src="model/connection.js"></script>
+    <script src="model/pipeline.js"></script>
+    <script src="model/cluster.js"></script>
+    <script src="model/monitoring.js"></script>
+
+	<script src="services/jsplumb-service.js"></script>
+	<script src="services/notification.js"></script>
+
+    <script src="directives/component.js"></script>
+    <script src="directives/property-editor.js"></script>
+    <script src="directives/stream-editor.js"></script>
+    <script src="directives/switch.js"></script>
+    <script src="directives/rpattern.js"></script>
+    <script src="directives/click-to-edit.js"></script>
+    <script src="directives/pipeline-data-workflow.js"></script>
+    <script src="directives/tags.js"></script>
+    <script src="directives/pipeline-monitoring-edition.js"></script>
+
+    <script src="directives/monitoring/monitoring-chart.js"></script>
+    <script src="directives/monitoring/time-series-chart.js"></script>
+    <script src="directives/monitoring/lines-monitoring-chart.js"></script>
+    <script src="directives/monitoring/areas-monitoring-chart.js"></script>
+    <script src="directives/monitoring/stacked-areas-monitoring-chart.js"></script>
+    <script src="directives/monitoring/correlations-monitoring-chart.js"></script>
+    <script src="directives/monitoring/scatter-plot-monitoring-chart.js"></script>
+
+	<script src="app/controllers/navigation-bar.js"></script>
+	<script src="app/controllers/edit-pipeline.js"></script>
+    <script src="app/controllers/list-pipelines.js"></script>
+    <script src="app/controllers/create-pipeline.js"></script>
+	<script src="app/controllers/edit-component.js"></script>
+	<script src="app/controllers/manage-cluster.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+RollingDistinctCount:
+
+1.Bolt分成4个并行的Task, 使用field分组方式, 并且分组字段是第一个字段:
+
+builder.setBolt("counter1", new RollingDistinctCountBolt(60, 20, leftField, rightField), 4).fieldsGrouping(spoutId, new Fields(leftField));
+
+只会输出一遍不同的word:
+1442974464449-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::spark>>12:
+1442974464449-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::golda>>12:
+1442974464449-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::storm>>12:
+1442974464449-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::hadoop>>12:
+1442974464467-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::world>>12:
+1442974464467-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::mike>>12:
+1442974464470-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::scala>>12:
+1442974464470-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::hello>>12:
+1442974464480-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::jackson>>12:
+1442974464480-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::bertels>>12:
+1442974464497-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::nathan>>12:
+1442974464497-Bolt>>counter1;Stream>>default;Tuple>>accountLogin::ipAddress::clojure>>12:
+
+
+2.Bolt分成4个并行的Task,
+
+1) 分组使用两个字段
+builder.setBolt("counter2", new RollingDistinctCountBolt(60, 20, leftField, rightField), 4).fieldsGrouping(spoutId, new Fields(leftField, rightField));
+
+2) 使用shuffle分组方式:
+builder.setBolt("counter3", new RollingDistinctCountBolt(60, 20, leftField, rightField), 4).shuffleGrouping(spoutId);
+
+结果每个TASK都会输出相同的word. 比如spark一共出现了4次. 分别表示每个Task接收到的word-count.
+比如word=spark, 发射了9次到第一个Task, 发射了11次到第二个Task, ... 我们最终的结果应该是只有一个spark!
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::spark>>9:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::jackson>>10:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::golda>>10:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::world>>10:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::mike>>10:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::nathan>>7:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::bertels>>10:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::storm>>9:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::clojure>>9:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::scala>>11:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::hello>>8:
+1442974239234-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::hadoop>>11:
+
+1442974239245-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::spark>>11:
+1442974239245-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::jackson>>10:
+1442974239245-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::world>>9:
+1442974239245-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::golda>>9:
+1442974239245-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::mike>>10:
+1442974239245-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::nathan>>9:
+1442974239245-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::bertels>>11:
+1442974239245-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::storm>>8:
+1442974239246-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::clojure>>10:
+1442974239246-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::scala>>10:
+1442974239246-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::hello>>8:
+1442974239246-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::hadoop>>10:
+
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::spark>>9:
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::jackson>>11:
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::golda>>8:
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::world>>10:
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::mike>>11:
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::nathan>>10:
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::bertels>>12:
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::storm>>8:
+1442974239255-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::clojure>>11:
+1442974239256-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::scala>>7:
+1442974239256-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::hello>>8:
+1442974239256-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::hadoop>>9:
+
+1442974239263-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::spark>>9:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::jackson>>10:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::world>>9:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::golda>>9:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::mike>>9:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::nathan>>11:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::bertels>>10:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::storm>>9:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::clojure>>9:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::scala>>9:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::hello>>10:
+1442974239264-Bolt>>counter3;Stream>>default;Tuple>>accountLogin::ipAddress::hadoop>>8:
+
+
+3.TimedTopology中对TimedCountBolt使用shuffleGrouping, 并行度为3:
+
+builder.setBolt("timedCountBolt", new TimedCountBolt(), WindowConstant.paralize)
+        .localOrShuffleGrouping(jsonBoltId, Compute.COUNT.name());
+
+日志中相同user出现了3次:
+1442981546965-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_7		2
+1442981546965-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		1
+1442981546965-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		1
+1442981546966-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		3
+1442981546966-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		1
+1442981546966-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_0		1
+1442981546971-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_7		2
+1442981546971-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		1
+1442981546972-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		1
+1442981546972-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		3
+1442981546972-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		1
+1442981546972-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_0		1
+1442981546980-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_7		2
+1442981546980-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		1
+1442981546980-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		1
+1442981546980-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		3
+1442981546980-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		1
+1442981546980-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_0		1
+
+但是更改为字段分组后, 日志还是一样:
+builder.setBolt("timedCountBolt", new TimedCountBolt(), WindowConstant.paralize)
+        .fieldsGrouping(jsonBoltId, Compute.COUNT.name(), new Fields(WindowConstant.masterKey));
+
+1442981735127-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		3
+1442981735127-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		1
+1442981735127-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		4
+1442981735127-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		4
+
+1442981735133-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		3
+1442981735133-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		1
+1442981735133-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		4
+1442981735133-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		4
+
+1442981735141-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		3
+1442981735141-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		1
+1442981735141-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		4
+1442981735141-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		4
+
+问题出在: TimedCountBolt的prepare方法创建了counterMap.
+如果Bolt配置了4个并行度, 则parepare方法会被调用4次! 前面RollingCountBolt没有这个问题因为它是在构造函数里!
+怎么看调用了4次, 在prepare方法里打印System.out.println("TimedCountBolt INIT");
+结果会有4次! 所以prepare里是为每个Task准备的, 而不是给一个Bolt准备的!
+解决办法是: 把counterMap放在Bolt的构造函数里面.
+
+正常的日志:
+1442989284-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_5		6
+1442989284-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_1		7
+1442989284-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_1		1
+1442989284-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_2		7
+1442989284-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_3		3
+1442989284-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_4		8
+1442989284-timedCountBolt;Tuple>>Koudai::Koudai::login::60::accountLogin::user_0		9
+
+

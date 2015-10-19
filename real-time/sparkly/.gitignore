@@ -1,0 +1,25 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# SBT
+log
+target
+default
+
+# Backup files
+*~
+*.bak
+*.cache
+
+#jEnv files
+.java-version

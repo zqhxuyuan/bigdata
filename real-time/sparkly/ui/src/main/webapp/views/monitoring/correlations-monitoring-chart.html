@@ -1,0 +1,19 @@
+<div class="col-xs-6">
+    <div id="correlations_plot" class="chart-container" ng-style="{'width': width}" style="float:left;">
+        <div class="chart-title">{{componentname}}</div>
+        <svg width="{{size - 10}}" height="{{size - 10}}" style="display: block; margin: auto;">
+            <g>
+                <rect ng-repeat="(combination, correlation) in correlations" ng-click="show_correlation_history(combination)"
+                      transform="{{correlation.position}}" width="{{correlation.size}}" height="{{correlation.size}}"
+                      style="cursor: pointer; fill-opacity: {{correlation.opacity}}; fill: {{correlation.color}};"
+                      tooltip-append-to-body="true" tooltip="{{correlation.tooltip}}">
+                </rect>
+            </g>
+        </svg>
+    </div>
+
+    <div id="correlation_history" ng-style="{'width': width}" style="float:right;">
+        <time-series-chart control="timeSeries"></time-series-chart>
+    </div>
+
+</div>
