@@ -381,28 +381,4 @@ object SparkBasicTest {
     actionTime(joinRdd2) //7s
   }
 
-  //文件压缩
-//  import java.util.Properties
-//  case class CsvObj(ts:Int,typ:String)
-//  def testCompressFile(): Unit ={
-//    val a = sc.textFile("hdfs:///csv/path")
-//    //读文件,转换为case class,根据RDD创建DataFrame,写parquet
-//    val b = a.map(_.split(",")).map(line=>CsvObj(line(0).toInt,line(1))).coalesce(1, shuffle = true)
-//
-//    writeCompressedParquetFile("gzip", "hdfs:///tmp/compress/gzip", b)
-//    writeCompressedParquetFile("snappy", "hdfs:///tmp/compress/snappy", b)
-//    writeCompressedParquetFile("lzo", "hdfs:///tmp/compress/lzo", b)
-//  }
-//  //codec:压缩编码, path:输出路径, rdd:数据. 输出指定编码压缩后的parquet文件.
-//  private def writeCompressedParquetFile[T<: Product : TypeTag](codec : String, path : String, rdd:RDD[T]): Unit ={
-//    val p = new Properties()
-//    p.setProperty("spark.sql.parquet.compression.codec",codec)
-//    sqlContext.setConf(p)
-//    val compressDF = sqlContext.createDataFrame(rdd)
-//    //为什么要转换为DataFrame,因为只有DataFrame有write.parquet输出为parquet文件的方法
-//    //如果是RDD,不能直接输出parquet文件格式. RDD只能saveAsTextFile或者saveAsObjectFile
-//    //rdd.saveAsTextFile(path)
-//    //compressDF.saveAsParquetFile(path)
-//    compressDF.write.parquet(path)
-//  }
 }

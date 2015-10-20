@@ -4,14 +4,15 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.policies.FallthroughRetryPolicy;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Created by zhengqh on 15/10/16.
  */
-public class CassandraClientTest {
+public class CassClientTest {
 
-    static CassandraClient client = new CassandraClient();
+    static CassClient client = new CassClient();
 
     //Velocity原先的查询方式
     static String velocity = "select * from velocity where attribute=? and partner_code=? and app_name=? and type=?";
@@ -34,7 +35,9 @@ public class CassandraClientTest {
         //insertByClient();
         //insertUsingTTL();
 
-        velocityDataSyncAll();
+        //velocityDataSyncAll1();
+        velocityDataSyncAll2();
+        velocityDataSyncAll3();
 
         client.close();
         System.exit(0);
@@ -51,15 +54,15 @@ public class CassandraClientTest {
     }
 
     //TODO: 线上环境显然不能直接查询全量数据, 可以采用分页? 但是C*的分页使用token方式实现. 有点麻烦
-    //16000,2.5min
-    public static void velocityDataSyncAll(){
+    //1.使用Batch, 类似于事务操作的原子性, 会很慢
+    public static void velocityDataSyncAll1(){
+        truncateVelocity3();
+        long start = System.currentTimeMillis();
+
         PreparedStatement pstmtSelectAll = client.getSession().prepare("select * from velocity");
         pstmtSelectAll.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
         List<Row> rows = client.getAll(pstmtSelectAll);
 
-        truncateVelocity3();
-
-        long start = System.currentTimeMillis();
         PreparedStatement pstmtInsert = client.getSession().prepare(
                 "BEGIN BATCH" +
                         " insert into velocity_app(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?);" +
@@ -84,10 +87,17 @@ public class CassandraClientTest {
             ));
         }
         long end = System.currentTimeMillis();
+        System.out.println(end-start);
+    }
 
+    //2.分开插入
+    public static void velocityDataSyncAll2(){
         truncateVelocity3();
+        long start = System.currentTimeMillis();
 
-        long start2 = System.currentTimeMillis();
+        PreparedStatement pstmtSelectAll = client.getSession().prepare("select * from velocity");
+        pstmtSelectAll.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        List<Row> rows = client.getAll(pstmtSelectAll);
 
         PreparedStatement pstmtInsert1 = client.getSession().prepare("insert into velocity_app(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
         PreparedStatement pstmtInsert2 = client.getSession().prepare("insert into velocity_partner(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
@@ -96,7 +106,6 @@ public class CassandraClientTest {
         pstmtInsert2.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
         pstmtInsert3.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 
-        long end2 = System.currentTimeMillis();
         for(Row row : rows){
             String attribute = row.getString("attribute");
             String partner_code = row.getString("partner_code");
@@ -110,18 +119,56 @@ public class CassandraClientTest {
             client.execute(pstmtInsert2, new Object[]{attribute, partner_code, app_name, type, timestamp, event, sequence_id});
             client.execute(pstmtInsert3, new Object[]{attribute, partner_code, app_name, type, timestamp, event, sequence_id});
         }
+        long end = System.currentTimeMillis();
+        System.out.println(end-start);
+    }
 
-        System.out.println("1:" + (end - start));
-        System.out.println("2:" + (end2 - start2));
+    //3.Paging Operation分页查询
+    public static void velocityDataSyncAll3(){
+        truncateVelocity3();
+        long start = System.currentTimeMillis();
+
+        Statement statement = new SimpleStatement("select * from velocity");
+        statement.setFetchSize(1000);
+        statement.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+
+        PreparedStatement pstmtInsert1 = client.getSession().prepare("insert into velocity_app(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
+        PreparedStatement pstmtInsert2 = client.getSession().prepare("insert into velocity_partner(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
+        PreparedStatement pstmtInsert3 = client.getSession().prepare("insert into velocity_global(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
+        pstmtInsert1.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        pstmtInsert2.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        pstmtInsert3.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+
+        ResultSet resultSet = client.getSession().execute(statement);
+
+        Iterator<Row> iterator = resultSet.iterator();
+        while(iterator.hasNext()){
+            Row row = iterator.next();
+
+            String attribute = row.getString("attribute");
+            String partner_code = row.getString("partner_code");
+            String app_name = row.getString("app_name");
+            String type = row.getString("type");
+            Long timestamp = row.getLong("timestamp");
+            String event = row.getString("event");
+            String sequence_id = row.getString("sequence_id");
+
+            client.execute(pstmtInsert1, new Object[]{attribute, partner_code, app_name, type, timestamp, event, sequence_id});
+            client.execute(pstmtInsert2, new Object[]{attribute, partner_code, app_name, type, timestamp, event, sequence_id});
+            client.execute(pstmtInsert3, new Object[]{attribute, partner_code, app_name, type, timestamp, event, sequence_id});
+        }
+        long end = System.currentTimeMillis();
+        System.out.println(end-start);
     }
 
     //插入数据: Exception in thread "main" com.datastax.driver.core.exceptions.InvalidQueryException: You must use conditional updates for serializable writes
     //Exception in thread "main" com.datastax.driver.core.exceptions.InvalidTypeException: Invalid type for value 4 of CQL type bigint, expecting class java.lang.Long but class java.lang.Integer provided
     public static void insertByClient(){
-        PreparedStatement pstmtInsert = client.getSession().prepare("insert into velocity_test(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
+        PreparedStatement pstmtInsert = client.getSession().prepare("insert into velocity(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
         pstmtInsert.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        for(int i=0;i<100;i++) {
-            client.execute(pstmtInsert, new Object[]{"test2", "koudai", "koudai_ios", "account", Long.valueOf(12345678 + i), "raw event json str", "" + Long.valueOf(12345678 + i)});
+        for(int i=0;i<500;i++) {
+            for(int j=0;j<10;j++)
+               client.execute(pstmtInsert, new Object[]{"test_"+j, "koudai", "koudai_ios", "account", Long.valueOf(12345678 + i), "raw event json str", "" + Long.valueOf(12345678 + i)});
         }
     }
 
@@ -147,20 +194,20 @@ public class CassandraClientTest {
                 .build();
         Session session = cluster.connect("forseti");
 
-        insertVelocity(session, "velocity_app");
-        insertVelocity(session, "velocity_partner");
-        insertVelocity(session, "velocity_global");
-        insertVelocity(session, "velocity_test");
+        insertVelocity(session, "velocity_app", "test");
+        insertVelocity(session, "velocity_partner", "test");
+        insertVelocity(session, "velocity_global", "test");
+        insertVelocity(session, "velocity_test", "test");
 
         session.close();
         cluster.close();
     }
-    public static void insertVelocity(Session session, String tbl){
+    public static void insertVelocity(Session session, String tbl, String rowKey){
         for(int i=0;i<8000;i++){
             RegularStatement insert = QueryBuilder.insertInto("forseti", tbl).values(
                     "attribute,partner_code,app_name,type,timestamp,event,sequence_id".split(","),
                     new Object[]{
-                            "test", "koudai", "koudai_ios", "account", 12345678+i, "raw event json str", ""+12345678+i
+                            rowKey, "koudai", "koudai_ios", "account", 12345678+i, "raw event json str", ""+12345678+i
                     });
             session.execute(insert);
         }
