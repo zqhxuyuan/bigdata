@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class CassClientTest {
 
-    static CassClient client = new CassClient();
+    static CassClient client = new CassClient("forseti", "192.168.6.52,192.168.6.53","DC1");
 
     //Velocity原先的查询方式
     static String velocity = "select * from velocity where attribute=? and partner_code=? and app_name=? and type=?";
@@ -23,15 +23,9 @@ public class CassClientTest {
     static String velocity_partner = "select * from velocity_partner where attribute=? and partner_code=? order by timestamp desc limit 1000";
     static String velocity_global = "select * from velocity_global where attribute=? order by timestamp desc limit 1000";
 
-    static {
-        client.setKeyspace("forseti");
-        client.setFetchSize(2);
-        client.setLocalDc("DC1");
-        client.setAgentHostList("192.168.6.52,192.168.6.53");
-        client.init();
-    }
-
     public static void main(String[] args) {
+        client.init();
+
         //insertByClient();
         //insertUsingTTL();
 
