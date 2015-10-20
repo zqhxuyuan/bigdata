@@ -32,7 +32,7 @@ import com.datastax.spark.connector.streaming._
  */
 object KafkaStreamingWordCountApp extends App with Logging with Assertions {
 
-  val words = "/Users/zhengqh/Github/tongdun/spark-intro/src/main/resources/words"
+  val words = "/Users/zhengqh/Github/td/spark-intro/src/main/resources/words"
 
   val topic = "streaming.wordcount.topic"
   val group = "streaming.wordcount.group"

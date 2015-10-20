@@ -5,14 +5,12 @@ import com.datastax.driver.core.Cluster.Builder;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
+import com.datastax.driver.core.policies.FallthroughRetryPolicy;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class CassClient {
     private static Logger    log                        = LoggerFactory.getLogger(CassClient.class);
@@ -137,5 +135,17 @@ public class CassClient {
     public ResultSet execute(PreparedStatement pstmt, Object... paramValues) {
         BoundStatement bstmt = pstmt.bind(paramValues);
         return session.execute(bstmt);
+    }
+
+    //设置Statement的一致性级别
+    public PreparedStatement getPrepareSTMT(String cql){
+        PreparedStatement statement = session.prepare(cql);
+        statement.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        return statement;
+    }
+    public Statement getSimpleSTMT(String cql){
+        Statement statement = new SimpleStatement(cql);
+        statement.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        return statement;
     }
 }

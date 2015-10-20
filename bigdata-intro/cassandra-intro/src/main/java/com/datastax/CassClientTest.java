@@ -30,7 +30,7 @@ public class CassClientTest {
         //insertUsingTTL();
 
         //velocityDataSyncAll1();
-        velocityDataSyncAll2();
+        //velocityDataSyncAll2();
         velocityDataSyncAll3();
 
         client.close();
@@ -53,17 +53,15 @@ public class CassClientTest {
         truncateVelocity3();
         long start = System.currentTimeMillis();
 
-        PreparedStatement pstmtSelectAll = client.getSession().prepare("select * from velocity");
-        pstmtSelectAll.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        PreparedStatement pstmtSelectAll = client.getPrepareSTMT("select * from velocity");
         List<Row> rows = client.getAll(pstmtSelectAll);
 
-        PreparedStatement pstmtInsert = client.getSession().prepare(
+        PreparedStatement pstmtInsert = client.getPrepareSTMT(
                 "BEGIN BATCH" +
                         " insert into velocity_app(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?);" +
                         " insert into velocity_partner(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?);" +
                         " insert into velocity_global(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?);" +
                         "APPLY BATCH");
-        pstmtInsert.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 
         for(Row row : rows){
             String attribute = row.getString("attribute");
@@ -74,6 +72,7 @@ public class CassClientTest {
             String event = row.getString("event");
             String sequence_id = row.getString("sequence_id");
 
+            //使用Session操作, Statement要用bind绑定paramValues.
             client.getSession().execute(pstmtInsert.bind(
                     attribute, partner_code, app_name, type, timestamp, event, sequence_id,
                     attribute, partner_code, app_name, type, timestamp, event, sequence_id,
@@ -89,16 +88,12 @@ public class CassClientTest {
         truncateVelocity3();
         long start = System.currentTimeMillis();
 
-        PreparedStatement pstmtSelectAll = client.getSession().prepare("select * from velocity");
-        pstmtSelectAll.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        PreparedStatement pstmtSelectAll = client.getPrepareSTMT("select * from velocity");
         List<Row> rows = client.getAll(pstmtSelectAll);
 
-        PreparedStatement pstmtInsert1 = client.getSession().prepare("insert into velocity_app(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
-        PreparedStatement pstmtInsert2 = client.getSession().prepare("insert into velocity_partner(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
-        PreparedStatement pstmtInsert3 = client.getSession().prepare("insert into velocity_global(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
-        pstmtInsert1.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        pstmtInsert2.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        pstmtInsert3.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        PreparedStatement pstmtInsert1 = client.getPrepareSTMT("insert into velocity_app(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
+        PreparedStatement pstmtInsert2 = client.getPrepareSTMT("insert into velocity_partner(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
+        PreparedStatement pstmtInsert3 = client.getPrepareSTMT("insert into velocity_global(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
 
         for(Row row : rows){
             String attribute = row.getString("attribute");
@@ -122,19 +117,14 @@ public class CassClientTest {
         truncateVelocity3();
         long start = System.currentTimeMillis();
 
-        Statement statement = new SimpleStatement("select * from velocity");
+        Statement statement = client.getSimpleSTMT("select * from velocity");
         statement.setFetchSize(1000);
-        statement.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
 
-        PreparedStatement pstmtInsert1 = client.getSession().prepare("insert into velocity_app(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
-        PreparedStatement pstmtInsert2 = client.getSession().prepare("insert into velocity_partner(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
-        PreparedStatement pstmtInsert3 = client.getSession().prepare("insert into velocity_global(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
-        pstmtInsert1.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        pstmtInsert2.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        pstmtInsert3.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        PreparedStatement pstmtInsert1 = client.getPrepareSTMT("insert into velocity_app(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
+        PreparedStatement pstmtInsert2 = client.getPrepareSTMT("insert into velocity_partner(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
+        PreparedStatement pstmtInsert3 = client.getPrepareSTMT("insert into velocity_global(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
 
         ResultSet resultSet = client.getSession().execute(statement);
-
         Iterator<Row> iterator = resultSet.iterator();
         while(iterator.hasNext()){
             Row row = iterator.next();
@@ -158,8 +148,7 @@ public class CassClientTest {
     //插入数据: Exception in thread "main" com.datastax.driver.core.exceptions.InvalidQueryException: You must use conditional updates for serializable writes
     //Exception in thread "main" com.datastax.driver.core.exceptions.InvalidTypeException: Invalid type for value 4 of CQL type bigint, expecting class java.lang.Long but class java.lang.Integer provided
     public static void insertByClient(){
-        PreparedStatement pstmtInsert = client.getSession().prepare("insert into velocity(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
-        pstmtInsert.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        PreparedStatement pstmtInsert = client.getPrepareSTMT("insert into velocity(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?)");
         for(int i=0;i<500;i++) {
             for(int j=0;j<10;j++)
                client.execute(pstmtInsert, new Object[]{"test_"+j, "koudai", "koudai_ios", "account", Long.valueOf(12345678 + i), "raw event json str", "" + Long.valueOf(12345678 + i)});
@@ -167,9 +156,7 @@ public class CassClientTest {
     }
 
     public static void insertUsingTTL(){
-        PreparedStatement pstmtInsert = client.getSession().prepare(
-                "insert into velocity(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?) using ttl 3600");
-        pstmtInsert.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        PreparedStatement pstmtInsert = client.getPrepareSTMT("insert into velocity(attribute, partner_code, app_name, type, timestamp, event, sequence_id) values(?, ?, ?, ?, ?, ?, ?) using ttl 3600");
         for(int i=0;i<8000;i++) {
             client.execute(pstmtInsert, new Object[]{
                     "test3", "koudai", "koudai_ios", "account", Long.valueOf(12345678 + i), "raw event json str", "" + Long.valueOf(12345678 + i)
@@ -208,19 +195,12 @@ public class CassClientTest {
     }
 
     public static void velocityQuery(){
-        PreparedStatement pstmtSelectAppScope = client.getSession().prepare(velocity);
-        PreparedStatement preparedStatementOrder = client.getSession().prepare(velocityOrder);
+        PreparedStatement pstmtSelectAppScope = client.getPrepareSTMT(velocity);
+        PreparedStatement preparedStatementOrder = client.getPrepareSTMT(velocityOrder);
 
-        PreparedStatement preparedStatementOrder_app = client.getSession().prepare(velocity_app);
-        PreparedStatement preparedStatementOrder_partner = client.getSession().prepare(velocity_partner);
-        PreparedStatement preparedStatementOrder_global = client.getSession().prepare(velocity_global);
-
-        pstmtSelectAppScope.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        preparedStatementOrder.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-
-        preparedStatementOrder_app.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        preparedStatementOrder_partner.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
-        preparedStatementOrder_global.setConsistencyLevel(ConsistencyLevel.ONE).setRetryPolicy(FallthroughRetryPolicy.INSTANCE);
+        PreparedStatement preparedStatementOrder_app = client.getPrepareSTMT(velocity_app);
+        PreparedStatement preparedStatementOrder_partner = client.getPrepareSTMT(velocity_partner);
+        PreparedStatement preparedStatementOrder_global = client.getPrepareSTMT(velocity_global);
 
         query(preparedStatementOrder_app, new Object[]{"test", "koudai", "koudai_ios", "account"});
         query(preparedStatementOrder_partner, new Object[]{"test", "koudai"});
