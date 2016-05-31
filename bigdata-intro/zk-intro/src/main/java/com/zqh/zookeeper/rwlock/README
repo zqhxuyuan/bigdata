@@ -1,0 +1,20 @@
+http://blog.yuanxiaolong.cn/blog/2015/01/13/zookeeper-distribute-read-write-lock/
+
+读写锁(Read/Write Lock) 跟互斥锁相比不同的地方是，它分成了读和写两种模式，多个读可以并发执行，但写和读、写都互斥，不能同时执行行。
+利用ZooKeeper，在上面的基础上，稍做修改也可以实现传统的读写锁的语义，下面是基本的步骤:
+
+每个进程都在ZooKeeper上创建一个临时的顺序结点(Ephemeral Sequential) /locks/lock_${seq}
+${seq}最小的一个或多个结点为当前的持锁者，多个是因为多个读可以并发
+需要写锁的进程，Watch比它次小的进程对应的结点
+需要读锁的进程，Watch比它小的最后一个写进程对应的结点
+当前结点释放锁后，所有Watch该结点的进程都会被通知到，他们成为新的持锁者，如此循环反复
+
+解释一下：
+1.写并发时：zk保证了 Ephemeral Sequential 序号自增，且应该根据时序，让节点依次得到 写锁.
+
+例如有write-01、write-02、write-03，那么 write-02 需要等 write-01 写完后才能执行写动作, write-03 在 write-02后写，这样保持了业务的并发，类似“九连环” 。
+场景: 对订单付款，产生3个并发，那么 write-01 ，先向账户扣款，同时标记订单状态为已完成。那么 write-02 执行时候，就不会产生重复扣了。
+
+2.读并发时：由于每个进程并不关心当前其他进程在读什么，相反需要关心最后一个写的进程，不然并发时其他进程未写完时就读，就产生了脏读。
+所以，这里要获取 write-MaxNo 并所有读进程，都对这个 write-MaxNo znode 设置 watch，
+当此 znode 写动作执行完后,触发 deleteNode 事件,回调到 read上的 watcher。

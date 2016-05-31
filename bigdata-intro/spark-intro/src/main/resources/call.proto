@@ -1,0 +1,30 @@
+package com.td.bigdata.spark.call;
+
+message PhoneEntry {
+    required int64 toNumber = 1;
+    required int64 toUserId = 2;
+    required int32 zipCode = 3;
+    required int32 countCalls = 4;
+    repeated double prices = 5;
+}
+message Aggregate {
+    required int32 year = 1;
+    required int32 month = 2;
+    required int32 day = 3;
+    required int32 hour = 4;
+    required int64 userId = 5;
+    required int32 callCount = 6;
+    required int64 sumDuration = 7;
+    required int64 maxDuration = 8;
+    required int64 minDuration = 9;
+    required double sumPricing = 10;
+    required double avgPricing = 11;
+    required double avgDiscount = 12;
+    required bool hadAnyDiscount = 13;
+    required double avgAddCharge = 14;
+    required double minBalance = 15;
+    required double maxBalance = 16;
+    required double medianBalance = 17;
+    repeated PhoneEntry phoneBook = 18;
+    repeated int32 hoursBreakdown = 19;
+}

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="cc" class="com.zqh.paas.config.ConfigurationCenter" init-method="init">
+        <constructor-arg value="localhost:2181"/>
+        <constructor-arg value="10000" />
+        <constructor-arg value="P" />
+        <constructor-arg>
+            <list>
+                <value>/paasConf-dev.properties</value>
+            </list>
+        </constructor-arg>
+        <property name="auth" value="7e6161fe018bd4054414cbc9999fee89f9110662f8981993"/>
+    </bean>
+
+    <bean id="logWriter" class="com.zqh.paas.log.impl.MongoLogWriter" init-method="init">
+        <property name="confCenter" ref="cc"/>
+        <property name="confPath" value="/com/ai/paas/logger/conf"/>
+    </bean>
+    <bean id="logMessageListener" class="com.zqh.paas.message.impl.KafkaLogMessageListener">
+    	<property name="logTopic" value="paas_log_mongo_topic"/>
+    	<property name="logWriter" ref="logWriter"/>
+    </bean>
+
+    <bean id="messageConsumer" class="com.zqh.paas.message.impl.MessageConsumer" init-method="init">
+        <property name="confCenter" ref="cc"/>
+        <property name="listener" ref="logMessageListener"/>
+        <property name="confPath" value="/com/zqh/paas/message/messageConsumer"/>
+        <property name="groupId" value="kafka_log_message_group"/>
+        <property name="monitorTopicList">
+	        <list>
+	        	<value>paas_log_mongo_topic</value>
+	        </list>
+        </property>
+    </bean>
+</beans>

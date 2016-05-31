@@ -5,6 +5,7 @@ import java.sql.DriverManager
 import org.apache.spark.rdd.{RDD, JdbcRDD}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.catalyst.plans.Inner
+import org.apache.spark.sql.types._
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -156,6 +157,64 @@ object DataFrameTest {
     // SQL查询的返回结果为DataFrame对象，支持所有通用的RDD操作。
     // 可以按照顺序访问结果行的各个列。
     customersByCity.map(t => t(0) + "," + t(1)).collect().foreach(println)
+  }
+
+  def testJSONSchema(): Unit ={
+    //[address: struct<city:string,state:string>, address2: struct<city:string,state:string>, name: string]
+    val jsonStr =
+      """
+        |{"name":"Yin","address":{"city":"Columbus","state":"Ohio"},"address2":{"city":"Columbus","state":"Ohio"}}
+      """.stripMargin
+    val rdd = sqlContext.read.json(sc.parallelize(jsonStr :: Nil))
+    rdd.printSchema()
+    //没有显示指定Schema,则默认是StructType,想要将StructType转换为Map还不能转! 解决方式: 提前定义Schema
+    //java.lang.ClassCastException: org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema cannot be cast to scala.collection.immutable.Map
+    rdd.foreach(row => {
+      //val addressMap = row.getAs[Map[String, String]]("address")
+      //val addressMap2 = row.getMap(0)
+      //val addressRow = row.getStruct(0)
+      //val addressMap = addressRow.asInstanceOf[Map[String,String]]
+    })
+
+    //------------------------------------------------------------------
+    //定义Schema
+    import sqlContext.implicits._
+    val innerStruct = StructType(List(
+      StructField("address", MapType(StringType, StringType, true), true),
+      StructField("address2", MapType(StringType, StringType, true), true),
+      StructField("name", StringType, true)
+    ))
+
+    //即使JSON字符串中没有address2这个Map,在1.4+中没有问题
+    val json2 =
+      """
+        |{"name":"Yin","address":{"city":"Columbus","state":"Ohio"}}
+      """.stripMargin
+    val rdd2 = sc.parallelize(json2 :: Nil)
+    val df = sqlContext.jsonRDD(rdd2, innerStruct)
+    df.printSchema()
+
+    //表结构按照的是StructType, 可以看到是map,而不再是struct了
+    /**
+    root
+     |-- address: map (nullable = true)
+     |    |-- key: string
+     |    |-- value: string (valueContainsNull = true)
+     |-- address2: map (nullable = true)
+     |    |-- key: string
+     |    |-- value: string (valueContainsNull = true)
+     |-- name: string (nullable = true)
+      */
+
+    //现在可以getAs强制转换为Map类型了
+    df.map(row=>{
+      val address = row.getAs[Map[String,String]]("address")
+      val address2 = row.getAs[Map[String,String]]("address2")
+      (address,address2)
+    }).collect().foreach(row=>{
+      println(row._1)
+      println(row._2)
+    })
   }
 
   /**

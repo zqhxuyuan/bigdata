@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration PUBLIC "-//log4j/log4j Configuration//EN" "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    
+    <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+       <layout class="org.apache.log4j.PatternLayout"> 
+          <param name="ConversionPattern" value="%d %-5p %c.%M:%L - %m%n"/> 
+       </layout> 
+    </appender>
+    <appender name="RollingFile" class="org.apache.log4j.RollingFileAppender">
+    	<param name="MaxFileSize" value="100MB"/> 
+    	<param name="File" value="logMessageServer.log"/>
+    	<param name="Append" value="true" />  
+    	<param name="MaxBackupIndex" value="10" />
+       	<layout class="org.apache.log4j.PatternLayout"> 
+          	<param name="ConversionPattern" value="%d %-5p %c.%M:%L - %m%n"/> 
+       </layout> 
+    </appender>
+
+    <!-- 日志追加:写到Kafka消息队列中 -->
+    <appender name="MSGOUT" class="com.zqh.paas.log.impl.MessageLogAppender">
+    	<param name="logTopic" value="paas_log_mongo_topic"/> 
+    	<param name="appName" value="paasLogApp"/>
+    	<param name="confPath" value="/com/zqh/paas/message/logMessageSender"/>
+    	<param name="ccAddr" value="localhost:2181"/>
+    	<param name="runMod" value="P"/>
+    	<layout class="org.apache.log4j.PatternLayout"> 
+          	<param name="ConversionPattern" value="%d %-5p %c.%M:%L - %m%n"/> 
+       	</layout> 
+       	<filter class="org.apache.log4j.varia.LevelRangeFilter">  
+            <param name="levelMin" value="INFO" />  
+            <param name="AcceptOnMatch" value="true" />  
+        </filter>
+    </appender>
+ 
+    <!-- specify the logging level for loggers from other libraries -->
+    <logger name="com.zqh.paas">
+    	 <level value="INFO" />
+    </logger>
+    
+    <!-- 注意：以下配置需要保留，否则在使用MessageLogAppender时会造成死循环 -->
+    <!-- pay attention: following configuration should be retained for MessageLogAppender -->
+    <logger name="com.zqh.paas.message.impl.KafkaLogMessageListener" additivity="false">
+    	<level value="DEBUG" />
+    	<appender-ref ref="STDOUT" />
+    </logger>
+    <logger name="com.zqh.paas.message.impl.MessageSender" additivity="false">
+    	<level value="DEBUG" />
+    	<appender-ref ref="STDOUT" />
+    </logger>
+    <logger name="com.zqh.paas.config.ConfigurationCenter" additivity="false">
+    	<level value="DEBUG" />
+    	<appender-ref ref="STDOUT" />
+    </logger>
+    <logger name="com.zqh.paas.log.impl.MongoLogWriter" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="STDOUT" />
+    </logger>
+    <logger name="org.springframework" additivity="false">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT" />
+    </logger>
+    <logger name="kafka" additivity="false">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT" />
+    </logger>
+    <!-- end of pay attention-->
+    
+    <!-- for all other loggers log only info and above log messages -->
+    <root>
+        <priority value="INFO"/>
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="MSGOUT" />
+    </root>
+    
+</log4j:configuration> 
