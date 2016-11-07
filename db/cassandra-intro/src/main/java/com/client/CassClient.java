@@ -52,12 +52,16 @@ public class CassClient {
     public void init2(){
         Builder builder = Cluster.builder();
 
-        PoolingOptions poolingOptions = new PoolingOptions().setMaxConnectionsPerHost(HostDistance.REMOTE, 20).setCoreConnectionsPerHost(HostDistance.REMOTE, 2);
+        PoolingOptions poolingOptions = new PoolingOptions().
+                setMaxConnectionsPerHost(HostDistance.REMOTE, 20).
+                setCoreConnectionsPerHost(HostDistance.REMOTE, 2);
         SocketOptions socketOptions = new SocketOptions().setKeepAlive(true).setReceiveBufferSize(1024 * 1024).setSendBufferSize(1024 * 1024).setConnectTimeoutMillis(5 * 1000).setReadTimeoutMillis(1000);
         //TODO 这里设置fetchSize和使用SimpleStatement设置有什么区别??
         //consistencyLevel是查询的一致性级别, 写入的时候也有一个一致性级别的设置
         QueryOptions queryOptions = new QueryOptions().setFetchSize(1000).setConsistencyLevel(readConsistencyLevel);
         DCAwareRoundRobinPolicy dCAwareRoundRobinPolicy = new DCAwareRoundRobinPolicy(localDc, 0);
+
+        //poolingOptions.setMaxSimultaneousRequestsPerConnectionThreshold()
 
         builder.withPoolingOptions(poolingOptions);
         builder.withSocketOptions(socketOptions);

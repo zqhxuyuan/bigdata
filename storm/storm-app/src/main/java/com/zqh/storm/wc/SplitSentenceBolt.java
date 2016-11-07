@@ -21,13 +21,10 @@ public class SplitSentenceBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple tuple) {
 		String sentence = tuple.getStringByField("sentence");
-        //tuple.getString(0)
 		String[] words = sentence.split(" ");
 		for (String word : words) {
 			this.collector.emit(new Values(word));
-            //collector.emit(tuple, new Values(word));
 		}
-		// Reliability in bolt:
 		this.collector.ack(tuple);
 	}
 

@@ -15,16 +15,13 @@
  */
 package org.calrissian.flowmix.example;
 
-import org.calrissian.flowmix.api.aggregator.DistCountAggregator;
-import org.calrissian.flowmix.api.aggregator.GroupCountAggregator;
-import org.calrissian.flowmix.api.aggregator.SumAggregator;
+import org.calrissian.flowmix.api.aggregator.*;
 import org.calrissian.flowmix.example.support.ExampleRunner;
 import org.calrissian.flowmix.example.support.ExampleRunner2;
 import org.calrissian.flowmix.example.support.FlowProvider;
 import org.calrissian.flowmix.api.Flow;
 import org.calrissian.flowmix.api.Policy;
 import org.calrissian.flowmix.api.builder.FlowBuilder;
-import org.calrissian.flowmix.api.aggregator.CountAggregator;
 
 import java.util.List;
 
@@ -61,7 +58,7 @@ import static java.util.Arrays.asList;
  * select(key1,key3).partition(key1).count
  *
  * 6.有两个字段(主维度,从维度), 计算从维度在主维度上的个数
- *        partitionCount                    IP关联的账户数(去重)
+ *        partitionCount                    IP关联的账户数(去重) IP : accountDistinctCount : accountTotalCount
  * ip           account     count           ip        accountCount  accountSum
  * 1.1.1.1      AA          5               1.1.1.1     2           7
  * 1.1.1.1      BB          2               1.1.1.2     3           8
@@ -91,6 +88,7 @@ public class AggregatorExample implements FlowProvider {
     // C.一天的调用量,key3代表一条事件,可以用sequence_id字段表示
     //   适用场景:比如在大屏上实时显示系统的调用事件数量,每隔10秒钟刷新一次.
     // select count(*) from tbl where key3 is not null
+
     public  List<Flow> count() {
         Flow flow = new FlowBuilder()
                 .id("flow1")
@@ -220,6 +218,26 @@ public class AggregatorExample implements FlowProvider {
                             .clearOnTrigger().end()
                     .endStream()
                 .endDefs()
+                .createFlow();
+
+        return asList(new Flow[]{flow});
+    }
+
+    public List<Flow> assocDistCount2() {
+        Flow flow = new FlowBuilder()
+                .id("flow1")
+                    .flowDefs()
+                        .stream("stream1")
+                            .select().fields("key1","key3").end()
+                            //.partition().fields("key1","key3").end()
+                            .partition().fields("key1").end()
+                            .aggregate().aggregator(AssocCountAggregator.class)
+                                .config("assocField", "key1,key3")
+                                .evict(Policy.COUNT, 50000)
+                                .trigger(Policy.TIME, 10)
+                                .clearOnTrigger().end()
+                        .endStream()
+                    .endDefs()
                 .createFlow();
 
         return asList(new Flow[]{flow});

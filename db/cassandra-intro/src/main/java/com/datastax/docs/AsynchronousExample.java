@@ -1,9 +1,11 @@
 package com.datastax.docs;
 
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class AsynchronousExample extends SimpleClient {
     public AsynchronousExample() {
@@ -20,12 +22,15 @@ public class AsynchronousExample extends SimpleClient {
         client.createSchema();
         client.loadData();
         ResultSetFuture results = client.getRows();
+
+        //虽然ResultSetFuture是异步的,但是getUninterruptibly,还是会阻塞
         for (Row row : results.getUninterruptibly()) {
             System.out.printf( "%s: %s / %s\n",
                     row.getString("artist"),
                     row.getString("title"),
                     row.getString("album") );
         }
+
         //client.dropSchema("simplex");
         client.close();
     }

@@ -29,36 +29,27 @@ import java.util.Map;
 import java.util.Random;
 
 public class RandomSentenceSpout extends BaseRichSpout {
-  SpoutOutputCollector _collector;
-  Random _rand;
-
+  SpoutOutputCollector collector;
+  Random rand;
 
   @Override
   public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
-    _collector = collector;
-    _rand = new Random();
+    this.collector = collector;
+    rand = new Random();
   }
 
   @Override
   public void nextTuple() {
     Utils.sleep(100);
-    String[] sentences = new String[]{ "the cow jumped over the moon", "an apple a day keeps the doctor away",
-        "four score and seven years ago", "snow white and the seven dwarfs", "i am at two with nature" };
-    String sentence = sentences[_rand.nextInt(sentences.length)];
-    _collector.emit(new Values(sentence));
-  }
-
-  @Override
-  public void ack(Object id) {
-  }
-
-  @Override
-  public void fail(Object id) {
+    String[] sentences = new String[]{ "the cow jumped over the moon", "an apple a day keeps the doctor away", "four score and seven years ago", "snow white and the seven dwarfs", "i am at two with nature" };
+    String sentence = sentences[rand.nextInt(sentences.length)];
+    this.collector.emit(new Values(sentence));
   }
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
     declarer.declare(new Fields("word"));
   }
-
+  public void ack(Object id) {}
+  public void fail(Object id) {}
 }

@@ -1,4 +1,4 @@
-package com.datastax;
+package com.datastax.start;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;

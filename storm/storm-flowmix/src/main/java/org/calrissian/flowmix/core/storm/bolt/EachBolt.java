@@ -90,7 +90,7 @@ public class EachBolt extends BaseRichBolt {
               }
         }
 
-      collector.ack(tuple);
+        collector.ack(tuple);
     }
 
     @Override

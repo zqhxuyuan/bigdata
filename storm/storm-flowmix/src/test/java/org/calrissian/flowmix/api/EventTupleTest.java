@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import org.calrissian.flowmix.core.support.EventSortByComparator;
 import org.calrissian.flowmix.core.support.deque.LimitingDeque;
 import org.calrissian.flowmix.core.support.deque.LimitingPriorityDeque;
+import org.calrissian.flowmix.core.support.window.Window;
 import org.calrissian.flowmix.core.support.window.WindowItem;
 import org.calrissian.flowmix.example.support.MockEvent;
 import org.calrissian.mango.domain.Pair;
@@ -37,6 +38,19 @@ public class EventTupleTest {
 
         eventCollection.add(event);
         return eventCollection;
+    }
+
+    @Test
+    public void testWindowEvent(){
+        Window window = new Window("", 10);
+        window.add(new BaseEvent(UUID.randomUUID().toString(), System.currentTimeMillis()), "");
+        window.add(new BaseEvent(UUID.randomUUID().toString(), System.currentTimeMillis()), "");
+        window.add(new BaseEvent(UUID.randomUUID().toString(), System.currentTimeMillis()), "");
+        for(WindowItem item : window.getEvents()){
+            System.out.println(item.getEvent());
+        }
+        WindowItem last = window.expire();
+        System.out.println(last.getEvent());
     }
 
     @Test

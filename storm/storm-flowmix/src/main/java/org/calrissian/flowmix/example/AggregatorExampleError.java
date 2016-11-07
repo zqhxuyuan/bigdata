@@ -30,14 +30,14 @@ import static java.util.Arrays.asList;
 /**
  * 求关联的几种错误方法. 正确的方式在AggregatorExample.assocDistCount
  */
-public class AggregatorExample2 implements FlowProvider {
+public class AggregatorExampleError implements FlowProvider {
     @Override
     public List<Flow> getFlows() {
         return assocDistCount();
     }
 
     public static void main(String args[]) {
-        new ExampleRunner2(new AggregatorExample2()).run();
+        new ExampleRunner2(new AggregatorExampleError()).run();
     }
 
     //6.×

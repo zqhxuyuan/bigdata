@@ -35,7 +35,8 @@ public class Window {
                                              // Circular buffer needs to be used after concept is proven
     protected int triggerTicks = 0;     //计数器:在基于时间的触发策略中,在tick中增加计数器,表示增加了一秒; 在基于次数的触发策略中,在非tick中增加计数器,表示增加了一条事件
 
-    public Window() {}
+    public Window() {
+    }
 
     /**
      * A progressive window buffer which automatically evicts by count

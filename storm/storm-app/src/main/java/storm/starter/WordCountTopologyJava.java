@@ -37,11 +37,50 @@ import java.util.Map;
 /**
  * This topology demonstrates Storm's stream groupings and multilang capabilities.
  */
-public class WordCountTopology {
+public class WordCountTopologyJava {
 
-    public static class SplitSentence extends ShellBolt implements IRichBolt {
-        public SplitSentence() {
-            super("python", "splitsentence.py");
+    public class RandomSentenceSpout extends BaseRichSpout {
+      SpoutOutputCollector collector;
+      Random rand;
+      String[] sentences = null;
+
+      @Override
+      public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
+        this.collector = collector;
+        rand = new Random();
+        sentences = new String[]{ "the cow jumped over the moon", "an apple a day keeps the doctor away", "four score and seven years ago", "snow white and the seven dwarfs", "i am at two with nature" };
+      }
+
+      @Override
+      public void nextTuple() {
+        String sentence = sentences[rand.nextInt(sentences.length)];
+        this.collector.emit(new Values(sentence));
+      }
+
+      @Override
+      public void declareOutputFields(OutputFieldsDeclarer declarer) {
+        declarer.declare(new Fields("line"));
+      }
+      public void ack(Object id) {}
+      public void fail(Object id) {}
+    }
+
+    public static class SplitSentenceBolt extends BaseRichBolt {
+        private OutputCollector collector;
+
+        @Override
+        public void prepare(Map config, TopologyContext context, OutputCollector collector) {
+            this.collector = collector;
+        }
+
+        @Override
+        public void execute(Tuple tuple) {
+            String sentence = tuple.getStringByField("sentence");
+            String[] words = sentence.split(" ");
+            for (String word : words) {
+                this.collector.emit(new Values(word));
+            }
+            this.collector.ack(tuple);
         }
 
         @Override
@@ -50,7 +89,7 @@ public class WordCountTopology {
         }
     }
 
-    public static class WordCount extends BaseBasicBolt {
+    public static class WordCountBolt extends BaseBasicBolt {
         Map<String, Integer> counts = new HashMap<String, Integer>();
 
         @Override
@@ -73,8 +112,8 @@ public class WordCountTopology {
 
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("spout", new RandomSentenceSpout(), 5);
-        builder.setBolt("split", new SplitSentence(), 8).shuffleGrouping("spout");
-        builder.setBolt("count", new WordCount(), 12).fieldsGrouping("split", new Fields("word"));
+        builder.setBolt("split", new SplitSentenceBolt(), 8).shuffleGrouping("spout");
+        builder.setBolt("count", new WordCountBolt(), 12).fieldsGrouping("split", new Fields("word"));
 
         Config conf = new Config();
         conf.setDebug(true);

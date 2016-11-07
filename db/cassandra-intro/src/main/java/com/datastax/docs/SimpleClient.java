@@ -1,14 +1,15 @@
 package com.datastax.docs;
 
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Host;
-import com.datastax.driver.core.Metadata;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.datastax.driver.core.exceptions.QueryExecutionException;
+import com.datastax.driver.core.exceptions.QueryValidationException;
 import com.datastax.driver.core.policies.ConstantReconnectionPolicy;
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class SimpleClient {
     private Cluster cluster;
@@ -86,6 +87,28 @@ public class SimpleClient {
         System.out.println();
     }
 
+    public void querySchema2() {
+        Statement statement = new SimpleStatement(
+                "INSERT INTO simplex.songs " +
+                        "(id, title, album, artist) " +
+                        "VALUES (da7c6910-a6a4-11e2-96a9-4db56cdc5fe7," +
+                        "'Golden Brown', 'La Folie', 'The Stranglers'" +
+                        ");");
+        try {
+            getSession().execute(statement);
+        } catch (NoHostAvailableException e) {
+            System.out.printf("No host in the %s cluster can be contacted to execute the query.\n",
+                    getSession().getCluster());
+        } catch (QueryExecutionException e) {
+            System.out.println("An exception was thrown by Cassandra because it cannot " +
+                    "successfully execute the query with the specified consistency level.");
+        } catch (QueryValidationException e) {
+            System.out.printf("The query is not valid, for example, incorrect syntax.");
+        } catch (IllegalStateException e) {
+            System.out.println("The BoundStatement is not ready.");
+        }
+    }
+
     public void close() {
         session.close();
         cluster.close();
@@ -96,7 +119,7 @@ public class SimpleClient {
         client.connect("127.0.0.1");
         client.createSchema();
         client.loadData();
-        client.querySchema();
+        client.querySchema2();
         client.close();
     }
 }

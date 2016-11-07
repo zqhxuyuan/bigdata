@@ -65,21 +65,21 @@ public class MergeStream {
 
     //相同的stream-id有两个bolt
     public static void setAllBolt(TopologyBuilder builder){
-        builder.setBolt("stream1", new PrintBolt())
+        builder.setBolt("printBolt1", new PrintBolt())
                 .localOrShuffleGrouping("myBolt1", "stream1")
                 .localOrShuffleGrouping("myBolt2", "stream1");
 
-        builder.setBolt("stream2", new PrintBolt())
+        builder.setBolt("printBolt2", new PrintBolt())
                 .localOrShuffleGrouping("myBolt1", "stream2")
                 .localOrShuffleGrouping("myBolt2", "stream2");
     }
 
     //每个PrintBolt只用一个stream的一个上游Bolt.
     public static void setSingleBolt(TopologyBuilder builder){
-        builder.setBolt("stream1", new PrintBolt())
+        builder.setBolt("printBolt1", new PrintBolt())
                 .localOrShuffleGrouping("myBolt2", "stream1");
 
-        builder.setBolt("stream2", new PrintBolt())
+        builder.setBolt("printBolt2", new PrintBolt())
                 .localOrShuffleGrouping("myBolt1", "stream2");
     }
 }
